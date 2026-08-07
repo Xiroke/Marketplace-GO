@@ -13,16 +13,6 @@
     "--stdin"
   ],
 
-  "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 2,
-    "editor.insertSpaces": true
-  },
-  "[yml]": {
-      "editor.defaultFormatter": "redhat.vscode-yaml",
-      "editor.formatOnSave": true,
-      "editor.tabSize": 2,
-      "editor.insertSpaces": true
-  }
+  "tooltitude.pb.importsCheckEnabled": false,
+  "tooltitude.pb.refsCheckEnabled": false
 }
