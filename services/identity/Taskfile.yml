@@ -23,10 +23,12 @@ tasks:
       - goose create -dir ./sql/migrations {{.NAME}} sql
 
   goose-up:
-    vars:
-      NAME: '{{index .MATCH 0}}'
     cmds:
       - goose up -dir ./sql/migrations
+
+  goose-down:
+    cmds:
+      - goose down -dir ./sql/migrations
 
   sqlc:
     cmds:

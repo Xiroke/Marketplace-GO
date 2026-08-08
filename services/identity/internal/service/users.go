@@ -5,13 +5,19 @@ import (
 	"errors"
 	"log/slog"
 	"strings"
+	"time"
 
+	"identity/internal/config"
 	dbgen "identity/internal/db"
 	"identity/internal/errs"
 	pb "identity/internal/grpc/v1"
+	"identity/internal/interceptors"
+	"identity/internal/token"
+	"identity/internal/utils"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,17 +27,20 @@ import (
 type UserService struct {
 	logger  *slog.Logger
 	queries *dbgen.Queries
+	config  *config.Config
 }
 
-func NewUserService(logger *slog.Logger, queries *dbgen.Queries) *UserService {
-	return &UserService{logger: logger, queries: queries}
+func NewUserService(logger *slog.Logger, queries *dbgen.Queries, config *config.Config) *UserService {
+	return &UserService{
+		logger:  logger,
+		queries: queries,
+		config:  config,
+	}
 }
 
 func (u *UserService) Login(ctx context.Context, request *pb.LoginRequest) (*pb.LoginResponse, error) {
-	select {
-	case <-ctx.Done():
-		return nil, status.Error(codes.Canceled, "request canceled")
-	default:
+	if err := utils.CloseCanceledRequestByContext(ctx); err != nil {
+		return nil, err
 	}
 
 	if strings.TrimSpace(request.Email) == "" ||
@@ -42,7 +51,7 @@ func (u *UserService) Login(ctx context.Context, request *pb.LoginRequest) (*pb.
 	user, err := u.queries.GetUserByEmail(ctx, request.Email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, status.Errorf(codes.InvalidArgument, "invalid credentials")
+			return nil, status.Errorf(codes.Unauthenticated, "invalid credentials")
 		}
 
 		u.logger.Error("failed to get user for login",
@@ -56,6 +65,11 @@ func (u *UserService) Login(ctx context.Context, request *pb.LoginRequest) (*pb.
 		return nil, status.Errorf(codes.InvalidArgument, "invalid credentials")
 	}
 
+	refreshToken, accessToken, err := u.createUserTokens(ctx, user.ID, request.Email)
+	if err != nil {
+		return nil, err
+	}
+
 	u.logger.Info("user logined successfully",
 		"user_id", user.ID.String(),
 		"username", user.Username,
@@ -63,21 +77,52 @@ func (u *UserService) Login(ctx context.Context, request *pb.LoginRequest) (*pb.
 	)
 
 	return &pb.LoginResponse{
-		AccessToken:  "",
-		RefreshToken: "",
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 		UserId:       user.ID.String(),
 	}, nil
 }
 
 func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*emptypb.Empty, error) {
-	panic("Not implemented")
+	if err := utils.CloseCanceledRequestByContext(ctx); err != nil {
+		return nil, err
+	}
+
+	userClaims, ok := ctx.Value(interceptors.UserKey).(*token.UserClaims)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "unauthenticated")
+	}
+
+	var userUUID pgtype.UUID
+	err := userUUID.Scan(userClaims.ID)
+	if err != nil {
+		u.logger.Error("failed to parse user_id as UUID", "error", err)
+		return nil, status.Error(codes.Internal, "invalid user ID format")
+	}
+
+	ok, err = u.queries.ExistRefreshTokenByUser(ctx, dbgen.ExistRefreshTokenByUserParams{
+		UserID: userUUID,
+		Token:  request.RefreshToken,
+	})
+	if err != nil {
+		u.logger.Error("failed to check user refresh token", "error", err)
+		return nil, status.Error(codes.Internal, "failed to check user refresh token")
+	}
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "invalid token")
+	}
+
+	err = u.queries.DeleteRefreshToken(ctx, request.RefreshToken)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to delete refresh token")
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	select {
-	case <-ctx.Done():
-		return nil, status.Error(codes.Canceled, "request canceled")
-	default:
+	if err := utils.CloseCanceledRequestByContext(ctx); err != nil {
+		return nil, err
 	}
 
 	if strings.TrimSpace(request.Username) == "" ||
@@ -125,6 +170,11 @@ func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest)
 		return nil, status.Errorf(codes.Internal, "failed to create user")
 	}
 
+	refreshToken, accessToken, err := u.createUserTokens(ctx, user.ID, request.Email)
+	if err != nil {
+		return nil, err
+	}
+
 	u.logger.Info("user registered successfully",
 		"user_id", user.ID.String(),
 		"username", user.Username,
@@ -132,14 +182,28 @@ func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest)
 	)
 
 	return &pb.RegisterResponse{
-		AccessToken:  "",
-		RefreshToken: "",
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 		UserId:       user.ID.String(),
 	}, nil
 }
 
 func (u *UserService) RefreshAccessToken(ctx context.Context, request *pb.RefreshAccessTokenRequest) (*pb.RefreshAccessTokenResponse, error) {
-	panic("Not implemented")
+	if err := utils.CloseCanceledRequestByContext(ctx); err != nil {
+		return nil, err
+	}
+
+	user, err := u.queries.GetUserByRefreshToken(ctx, request.RefreshToken)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid refresh token")
+	}
+
+	accessToken, err := token.GenerateAccessToken(u.config.JWT_SECRET, user.ID.String())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to generate access token, try again")
+	}
+
+	return &pb.RefreshAccessTokenResponse{AccessToken: accessToken}, nil
 }
 
 func (u *UserService) hashUserPassword(password string) (string, error) {
@@ -161,4 +225,38 @@ func (u *UserService) getFieldNameFromConstraint(constraint string) string {
 	}
 
 	return "undefined"
+}
+
+func (u *UserService) createUserTokens(ctx context.Context, user_id pgtype.UUID, email string) (string, string, error) {
+	refreshToken, err := token.GenerateRefreshToken(32)
+	if err != nil {
+		u.logger.Error("failed to generate refresh token",
+			"error", err,
+			"email", email,
+		)
+		return "", "", status.Errorf(codes.Internal, "failed to generate refresh token, try again")
+	}
+
+	_, err = u.queries.CreateRefreshToken(ctx, dbgen.CreateRefreshTokenParams{
+		UserID: user_id,
+		Token:  refreshToken,
+		ExpiredAt: pgtype.Timestamptz{
+			Time:  time.Now().Add(time.Hour * 24 * 7),
+			Valid: true,
+		},
+	})
+	if err != nil {
+		if errs.IsPostgresErrorByMap(err, errs.UniqueViolation) {
+			return "", "", status.Errorf(codes.Internal, "failed to create refresh token (unique token error), try again")
+		}
+
+		return "", "", status.Errorf(codes.Internal, "failed to create refresh token, try again")
+	}
+
+	accessToken, err := token.GenerateAccessToken(u.config.JWT_SECRET, user_id.String())
+	if err != nil {
+		return "", "", status.Errorf(codes.Internal, "failed to generate access token, try again")
+	}
+
+	return refreshToken, accessToken, nil
 }

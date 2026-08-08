@@ -12,8 +12,10 @@ import (
 	"google.golang.org/grpc"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 
+	"identity/internal/config"
 	dbgen "identity/internal/db"
 	pb "identity/internal/grpc/v1"
+	"identity/internal/interceptors"
 	"identity/internal/service"
 )
 
@@ -45,7 +47,16 @@ func (s *server) RefreshAccessToken(ctx context.Context, request *pb.RefreshAcce
 	return s.authService.RefreshAccessToken(ctx, request)
 }
 
+var methodsWithAuth = map[string]bool{
+	"/identity.v1.AuthService/Login":              false,
+	"/identity.v1.AuthService/Register":           false,
+	"/identity.v1.AuthService/RefreshAccessToken": false,
+	"/identity.v1.AuthService/Logout":             true,
+}
+
 func StartServer() {
+	config := config.NewConfig()
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
 	}))
@@ -58,15 +69,19 @@ func StartServer() {
 	}
 	defer dbpool.Close()
 
+	queries := dbgen.New(dbpool)
+
 	port := 8000
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	var opts []grpc.ServerOption
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(interceptors.GetAuthUnaryInterceptor(methodsWithAuth, queries)),
+	}
 
 	grpcServer := grpc.NewServer(opts...)
-	authService := service.NewUserService(logger, dbgen.New(dbpool))
+	authService := service.NewUserService(logger, queries, config)
 	pb.RegisterAuthServiceServer(grpcServer, newServer(dbpool, authService))
 	grpcServer.Serve(lis)
 }

@@ -20,6 +20,8 @@ CREATE TABLE users(
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )
 
+CREATE INDEX idx_users_email ON users(email);
+
 -- +goose Down
 DROP TABLE users;
 DROP FUNCTION update_timestamp();

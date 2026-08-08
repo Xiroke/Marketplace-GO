@@ -36,7 +36,7 @@ message RefreshAccessTokenRequest {
 }
 
 message RefreshAccessTokenResponse {
-
+  string access_token = 1;
 }
 
 service AuthService {

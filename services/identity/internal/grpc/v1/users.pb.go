@@ -344,6 +344,7 @@ func (x *RefreshAccessTokenRequest) GetRefreshToken() string {
 
 type RefreshAccessTokenResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -378,6 +379,13 @@ func (*RefreshAccessTokenResponse) Descriptor() ([]byte, []int) {
 	return file_internal_grpc_v1_users_proto_rawDescGZIP(), []int{6}
 }
 
+func (x *RefreshAccessTokenResponse) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
 var File_internal_grpc_v1_users_proto protoreflect.FileDescriptor
 
 const file_internal_grpc_v1_users_proto_rawDesc = "" +
@@ -401,8 +409,9 @@ const file_internal_grpc_v1_users_proto_rawDesc = "" +
 	"\rLogoutRequest\x12#\n" +
 	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"@\n" +
 	"\x19RefreshAccessTokenRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"\x1c\n" +
-	"\x1aRefreshAccessTokenResponse2\xbb\x02\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"?\n" +
+	"\x1aRefreshAccessTokenResponse\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken2\xbb\x02\n" +
 	"\vAuthService\x12>\n" +
 	"\x05Login\x12\x19.identity.v1.LoginRequest\x1a\x1a.identity.v1.LoginResponse\x12G\n" +
 	"\bRegister\x12\x1c.identity.v1.RegisterRequest\x1a\x1d.identity.v1.RegisterResponse\x12<\n" +
