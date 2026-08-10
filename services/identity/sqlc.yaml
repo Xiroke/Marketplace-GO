@@ -6,5 +6,6 @@ sql:
     gen:
       go:
         package: "dbgen"
-        out: "./internal/db"
+        out: "./internal/dbgen"
         sql_package: "pgx/v5"
+        emit_interface: true

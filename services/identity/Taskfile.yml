@@ -12,6 +12,10 @@ tasks:
       - echo "{{.GREETING}}"
     silent: true
 
+  run:
+    cmds:
+      - go run ./cmd/identity/main.go
+
   build:
     cmds:
       - go build -o bin/ ./cmd/identity/main.go

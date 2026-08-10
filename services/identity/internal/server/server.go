@@ -10,10 +10,13 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 
 	"identity/internal/config"
-	dbgen "identity/internal/db"
+	dbgen "identity/internal/dbgen"
 	pb "identity/internal/grpc/v1"
 	"identity/internal/interceptors"
 	"identity/internal/service"
@@ -71,17 +74,25 @@ func StartServer() {
 
 	queries := dbgen.New(dbpool)
 
-	port := 8000
+	port := 50051
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(interceptors.GetAuthUnaryInterceptor(methodsWithAuth, queries)),
+		grpc.UnaryInterceptor(interceptors.GetAuthUnaryInterceptor(methodsWithAuth, config, queries)),
 	}
 
+	logger.Info("Create server")
 	grpcServer := grpc.NewServer(opts...)
-	authService := service.NewUserService(logger, queries, config)
+
+	healthServer := health.NewServer()
+	healthpb.RegisterHealthServer(grpcServer, healthServer)
+	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
+
+	authService := service.NewUserService(logger, queries, queries, config)
 	pb.RegisterAuthServiceServer(grpcServer, newServer(dbpool, authService))
+	reflection.Register(grpcServer)
+	logger.Info("Run server")
 	grpcServer.Serve(lis)
 }

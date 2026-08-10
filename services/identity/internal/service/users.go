@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"identity/internal/config"
-	dbgen "identity/internal/db"
+	dbgen "identity/internal/dbgen"
 	"identity/internal/errs"
 	pb "identity/internal/grpc/v1"
 	"identity/internal/interceptors"
@@ -25,16 +25,18 @@ import (
 )
 
 type UserService struct {
-	logger  *slog.Logger
-	queries *dbgen.Queries
-	config  *config.Config
+	logger           *slog.Logger
+	userRepo         dbgen.UserRepository
+	refreshTokenRepo dbgen.RefreshTokenRepository
+	config           *config.Config
 }
 
-func NewUserService(logger *slog.Logger, queries *dbgen.Queries, config *config.Config) *UserService {
+func NewUserService(logger *slog.Logger, userRepo dbgen.UserRepository, refreshTokenRepo dbgen.RefreshTokenRepository, config *config.Config) *UserService {
 	return &UserService{
-		logger:  logger,
-		queries: queries,
-		config:  config,
+		logger:           logger,
+		userRepo:         userRepo,
+		refreshTokenRepo: refreshTokenRepo,
+		config:           config,
 	}
 }
 
@@ -48,7 +50,7 @@ func (u *UserService) Login(ctx context.Context, request *pb.LoginRequest) (*pb.
 		return nil, status.Error(codes.InvalidArgument, "email and password must not be empty")
 	}
 
-	user, err := u.queries.GetUserByEmail(ctx, request.Email)
+	user, err := u.userRepo.GetUserByEmail(ctx, request.Email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Errorf(codes.Unauthenticated, "invalid credentials")
@@ -88,19 +90,19 @@ func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*e
 		return nil, err
 	}
 
-	userClaims, ok := ctx.Value(interceptors.UserKey).(*token.UserClaims)
+	userClaims, ok := ctx.Value(interceptors.UserKey).(token.UserClaims)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthenticated")
 	}
 
 	var userUUID pgtype.UUID
-	err := userUUID.Scan(userClaims.ID)
+	err := userUUID.Scan(userClaims.UserID)
 	if err != nil {
 		u.logger.Error("failed to parse user_id as UUID", "error", err)
 		return nil, status.Error(codes.Internal, "invalid user ID format")
 	}
 
-	ok, err = u.queries.ExistRefreshTokenByUser(ctx, dbgen.ExistRefreshTokenByUserParams{
+	ok, err = u.refreshTokenRepo.ExistRefreshTokenByUser(ctx, dbgen.ExistRefreshTokenByUserParams{
 		UserID: userUUID,
 		Token:  request.RefreshToken,
 	})
@@ -112,10 +114,14 @@ func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*e
 		return nil, status.Error(codes.Unauthenticated, "invalid token")
 	}
 
-	err = u.queries.DeleteRefreshToken(ctx, request.RefreshToken)
+	err = u.refreshTokenRepo.DeleteRefreshToken(ctx, request.RefreshToken)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to delete refresh token")
 	}
+
+	u.logger.Info("user logout successfully",
+		"user_id", userClaims.ID,
+	)
 
 	return &emptypb.Empty{}, nil
 }
@@ -137,7 +143,7 @@ func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest)
 		return nil, status.Errorf(codes.Internal, "failed to hash password")
 	}
 
-	user, err := u.queries.CreateUser(ctx, dbgen.CreateUserParams{
+	user, err := u.userRepo.CreateUser(ctx, dbgen.CreateUserParams{
 		Username: request.Username,
 		Email:    request.Email,
 		Password: hashedPassword,
@@ -193,7 +199,7 @@ func (u *UserService) RefreshAccessToken(ctx context.Context, request *pb.Refres
 		return nil, err
 	}
 
-	user, err := u.queries.GetUserByRefreshToken(ctx, request.RefreshToken)
+	user, err := u.refreshTokenRepo.GetUserByRefreshToken(ctx, request.RefreshToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid refresh token")
 	}
@@ -202,6 +208,12 @@ func (u *UserService) RefreshAccessToken(ctx context.Context, request *pb.Refres
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate access token, try again")
 	}
+
+	u.logger.Info("user refresh access successfully",
+		"user_id", user.ID.String(),
+		"username", user.Username,
+		"email", user.Email,
+	)
 
 	return &pb.RefreshAccessTokenResponse{AccessToken: accessToken}, nil
 }
@@ -237,7 +249,7 @@ func (u *UserService) createUserTokens(ctx context.Context, user_id pgtype.UUID,
 		return "", "", status.Errorf(codes.Internal, "failed to generate refresh token, try again")
 	}
 
-	_, err = u.queries.CreateRefreshToken(ctx, dbgen.CreateRefreshTokenParams{
+	_, err = u.refreshTokenRepo.CreateRefreshToken(ctx, dbgen.CreateRefreshTokenParams{
 		UserID: user_id,
 		Token:  refreshToken,
 		ExpiredAt: pgtype.Timestamptz{

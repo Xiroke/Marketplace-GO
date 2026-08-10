@@ -11,9 +11,7 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	if err := godotenv.Load(); err != nil {
-		panic("Can't load .env file")
-	}
+	_ = godotenv.Load()
 
 	return &Config{
 		JWT_SECRET: []byte(getEnvOrPanic("JWT_SECRET")),
@@ -25,7 +23,8 @@ func getEnvOrPanic(key string) string {
 		return value
 	}
 
-	panic("You must pass key in .env")
+	msg := "You must pass " + key + " in .env"
+	panic(msg)
 }
 
 func getEnvOrDefault(key, defaultValue string) string {
