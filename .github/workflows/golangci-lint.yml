@@ -1,11 +1,16 @@
-name: golangci-lint
+name: identity golangci lint
 on:
   push:
     branches:
       - main
+    paths:
+      - 'services/identity/**'
+
   pull_request:
     branches:
       - main
+    paths:
+      - 'services/identity/**'
 
 permissions:
   contents: read
@@ -16,6 +21,11 @@ jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./services/identity
+
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6

@@ -1,11 +1,18 @@
-name: Upload Go test results
+name: identity tests
 
-on: [push]
+on:
+  push:
+    paths:
+      - 'services/identity/**'
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./services/identity
+
     strategy:
       matrix:
         go-version: ['1.26.x']
@@ -17,11 +24,11 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       - name: Install dependencies
-        run: go get .
+        run: go mod download
       - name: Test with Go
-        run: go test -json > TestResults-${{ matrix.go-version }}.json
+        run: go test -json ./... > TestResults-${{ matrix.go-version }}.json
       - name: Upload Go test results
         uses: actions/upload-artifact@v4
         with:
           name: Go-results-${{ matrix.go-version }}
-          path: TestResults-${{ matrix.go-version }}.json
+          path: services/identity/TestResults-${{ matrix.go-version }}.json
