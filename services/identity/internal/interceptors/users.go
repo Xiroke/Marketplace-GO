@@ -3,7 +3,7 @@ package interceptors
 import (
 	"context"
 	"identity/internal/config"
-	dbgen "identity/internal/dbgen"
+	"identity/internal/dbgen"
 	"identity/internal/token"
 	"strings"
 

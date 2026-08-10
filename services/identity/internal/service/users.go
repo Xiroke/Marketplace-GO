@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"identity/internal/config"
-	dbgen "identity/internal/dbgen"
+	"identity/internal/dbgen"
 	"identity/internal/errs"
 	pb "identity/internal/grpc/v1"
 	"identity/internal/interceptors"

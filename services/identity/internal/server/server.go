@@ -16,7 +16,7 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 
 	"identity/internal/config"
-	dbgen "identity/internal/dbgen"
+	"identity/internal/dbgen"
 	pb "identity/internal/grpc/v1"
 	"identity/internal/interceptors"
 	"identity/internal/service"
@@ -65,7 +65,7 @@ func StartServer() {
 	}))
 	slog.SetDefault(logger)
 
-	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	dbpool, err := pgxpool.New(context.Background(), config.DB.DATABASE_URL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)

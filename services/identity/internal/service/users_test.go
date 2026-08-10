@@ -4,9 +4,9 @@ import (
 	"context"
 	"identity/internal/config"
 	"identity/internal/dbgen"
+	"identity/internal/dbgen/mocks"
 	pb "identity/internal/grpc/v1"
 	"identity/internal/interceptors"
-	"identity/internal/service/mocks"
 	"identity/internal/token"
 	"log/slog"
 	"os"
@@ -32,7 +32,7 @@ func TestUserService_Login_Success(t *testing.T) {
 	refreshTokenMockRepo := mocks.NewMockRefreshTokenRepository(t)
 
 	testEmail := "user@example.com"
-	rawPassword := "raw_password"
+	rawPassword := "P@ssw0rd"
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 	require.NoError(t, err, "failed to hash password for test")
 
@@ -91,7 +91,7 @@ func TestUserService_Register_Success(t *testing.T) {
 	refreshTokenMockRepo := mocks.NewMockRefreshTokenRepository(t)
 
 	testEmail := "user@example.com"
-	rawPassword := "raw_password"
+	rawPassword := "P@ssw0rd"
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 	require.NoError(t, err, "failed to hash password for test")
 
@@ -151,7 +151,7 @@ func TestUserService_Logout_Success(t *testing.T) {
 	refreshTokenMockRepo := mocks.NewMockRefreshTokenRepository(t)
 
 	testEmail := "user@example.com"
-	rawPassword := "raw_password"
+	rawPassword := "P@ssw0rd"
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 	require.NoError(t, err, "failed to hash password for test")
 
@@ -201,7 +201,7 @@ func TestUserService_RefreshAccessToken_Success(t *testing.T) {
 	refreshTokenMockRepo := mocks.NewMockRefreshTokenRepository(t)
 
 	testEmail := "user@example.com"
-	rawPassword := "raw_password"
+	rawPassword := "P@ssw0rd"
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 	require.NoError(t, err, "failed to hash password for test")
 

@@ -24,8 +24,5 @@ template-schema: '{{.Template}}.schema.json'
 packages:
   identity/internal/dbgen:
     config:
-      dir: internal/service/mocks
+      dir: internal/dbgen/mocks
       pkgname: mocks
-    interfaces:
-      UserRepository:
-      RefreshTokenRepository:

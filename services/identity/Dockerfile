@@ -12,7 +12,7 @@ COPY . .
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/main .
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/main ./cmd/identity/main.go
 
 FROM alpine:3.19 AS run
 
@@ -22,9 +22,9 @@ RUN adduser -D appuser
 
 COPY --from=build /app/main ./main
 
-USER appuser
-
 RUN chown appuser:appuser /app/main
+
+USER appuser
 
 EXPOSE 50051
 
