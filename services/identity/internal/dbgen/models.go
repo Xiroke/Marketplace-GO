@@ -21,5 +21,6 @@ type User struct {
 	Username  string
 	Email     string
 	Password  string
+	UpdatedAt pgtype.Timestamptz
 	CreatedAt pgtype.Timestamptz
 }

@@ -2,16 +2,7 @@
 
 version: "3"
 
-vars:
-  GREETING: Hello, world!
-
 tasks:
-  default:
-    desc: Print a greeting message
-    cmds:
-      - echo "{{.GREETING}}"
-    silent: true
-
   run:
     cmds:
       - go run ./cmd/identity/main.go
@@ -41,3 +32,7 @@ tasks:
   grpc-gen:
     cmds:
       - protoc --go_out=internal/ --go-grpc_out=internal/ internal/grpc/v1/*.proto
+
+  test:
+    cmds:
+      - CGO_ENABLED=1 go test -race ./...

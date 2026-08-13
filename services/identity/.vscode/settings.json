@@ -10,7 +10,9 @@
   },
   "go.formatFlags": [
     "fmt",
-    "--stdin"
+    "--stdin",
+    "-local",
+    "identity"
   ],
 
   "tooltitude.pb.importsCheckEnabled": false,
