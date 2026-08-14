@@ -1,0 +1,66 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  run:
+    cmds:
+      - go run ./cmd/identity/main.go
+
+  build:
+    cmds:
+      - go build -o bin/ ./cmd/identity/main.go
+
+  goose-create:*:
+    vars:
+      NAME: '{{index .MATCH 0}}'
+    cmds:
+      - goose create -dir ./sql/migrations {{.NAME}} sql
+
+  goose-up:
+    cmds:
+      - goose up -dir ./sql/migrations
+
+  goose-down:
+    cmds:
+      - goose down -dir ./sql/migrations
+
+  sqlc:
+    cmds:
+      - sqlc generate
+
+  grpc-gen:
+    cmds:
+      - protoc --go_out=internal/ --go-grpc_out=internal/ internal/grpc/v1/*.proto
+
+  test:
+    cmds:
+      - CGO_ENABLED=1 go test -race ./...
+
+  fmt:
+    desc: Format Go files
+    cmds:
+      - goimports -w -local identity/ .
+      - gofmt -w .
+
+  vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  check:
+    desc: Run all checks
+    deps: [fmt, vet, lint]
+
+  pre-commit:
+    desc: Run pre-commit checks
+    cmds:
+      - task: fmt
+      - task: vet
+      - task: lint
+      - git add -u

@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package identity.v1;
+option go_package = "grpc/v1;catalogv1";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+message CreateProductRequest {
+  string name = 1;
+  string description = 2;
+  string price = 3;
+  string attributes = 4; //json
+  string creator_id = 5; //uuid
+  int32 category_id = 6;
+}
+
+message CreateProductResponse {
+  Product product = 1;
+}
+
+message CreateCategoryRequest {
+  string name = 1;
+  int32 parent_id = 2;
+}
+
+message CreateCategoryResponse {
+  string name = 1;
+  int32 parent_id = 2;
+  int32 id = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message Product {
+  string name = 1;
+  string description = 2;
+  string price = 3;
+  string attributes = 4; // json
+  string creator_id = 5; // uuid
+  int32 category_id = 6;
+  string id = 7; // uuid
+  string status = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message GetProductResponse {
+  Product product = 1;
+}
+
+message GetProductsByCreatorRequest {
+  string creator_id = 1; //uuid
+}
+
+message GetProductsByCreatorResponse {
+  repeated Product products = 1;
+}
+
+message GetProductsByCategoryRequest {
+  int32 category_id = 1;
+}
+
+message GetProductsByCategoryResponse {
+  repeated Product products = 1;
+}
+
+service CatalogService {
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+  rpc GetProductsByCreator(GetProductsByCreatorRequest) returns (GetProductsByCreatorResponse);
+  rpc GetProductsByCategory(GetProductsByCategoryRequest) returns (GetProductsByCategoryResponse);
+  rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
+}
