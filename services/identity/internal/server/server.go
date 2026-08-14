@@ -94,5 +94,8 @@ func StartServer() {
 	pb.RegisterAuthServiceServer(grpcServer, newServer(dbpool, authService))
 	reflection.Register(grpcServer)
 	logger.Info("Run server")
-	grpcServer.Serve(lis)
+	err = grpcServer.Serve(lis)
+	if err != nil {
+		panic("error to start grpc server")
+	}
 }

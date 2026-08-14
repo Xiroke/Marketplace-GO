@@ -2,16 +2,17 @@ package service
 
 import (
 	"context"
+	"log/slog"
+	"os"
+	"testing"
+	"time"
+
 	"identity/internal/config"
 	"identity/internal/dbgen"
 	"identity/internal/dbgen/mocks"
 	pb "identity/internal/grpc/v1"
 	"identity/internal/interceptors"
 	"identity/internal/token"
-	"log/slog"
-	"os"
-	"testing"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/mock"
@@ -213,6 +214,7 @@ func TestUserService_RefreshAccessToken_Success(t *testing.T) {
 	}
 
 	refreshToken, err := token.GenerateRefreshToken(32)
+	require.NoError(t, err, "failed to generate refresh token")
 	refreshTokenMockRepo.EXPECT().
 		GetUserByRefreshToken(mock.Anything, refreshToken).
 		Return(expectedUser, nil).

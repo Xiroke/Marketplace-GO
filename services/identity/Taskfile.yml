@@ -36,3 +36,31 @@ tasks:
   test:
     cmds:
       - CGO_ENABLED=1 go test -race ./...
+
+  fmt:
+    desc: Format Go files
+    cmds:
+      - goimports -w -local identity/ .
+      - gofmt -w .
+
+  vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  check:
+    desc: Run all checks
+    deps: [fmt, vet, lint]
+
+  pre-commit:
+    desc: Run pre-commit checks
+    cmds:
+      - task: fmt
+      - task: vet
+      - task: lint
+      - git add -u

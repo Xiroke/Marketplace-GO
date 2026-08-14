@@ -34,11 +34,3 @@ func getEnvOrPanic(key string) string {
 	msg := "You must pass " + key + " in .env"
 	panic(msg)
 }
-
-func getEnvOrDefault(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-
-	return defaultValue
-}

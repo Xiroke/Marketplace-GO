@@ -6,6 +6,7 @@ package mocks
 
 import (
 	"context"
+
 	"identity/internal/dbgen"
 
 	"github.com/jackc/pgx/v5/pgtype"

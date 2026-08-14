@@ -3,9 +3,10 @@ package dbgen
 import (
 	"context"
 	"errors"
+	"time"
+
 	"identity/internal/errs"
 	"identity/internal/token"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
@@ -36,6 +37,7 @@ func seedUser(userRepo UserRepository) (*User, error) {
 func seedTokens(ctx context.Context, refreshTokenRepo RefreshTokenRepository, JWT_SECRET []byte, user_id pgtype.UUID) (string, string, error) {
 	refreshToken, err := token.GenerateRefreshToken(32)
 	if err != nil {
+		return "", "", errors.New("failed to seed refresh token")
 	}
 
 	_, err = refreshTokenRepo.CreateRefreshToken(ctx, CreateRefreshTokenParams{

@@ -2,10 +2,11 @@ package interceptors
 
 import (
 	"context"
+	"strings"
+
 	"identity/internal/config"
 	"identity/internal/dbgen"
 	"identity/internal/token"
-	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
