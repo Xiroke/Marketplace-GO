@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"identity/internal/config"
-	"identity/internal/dbgen"
+	"identity/internal/db"
 	"identity/internal/errs"
 	pb "identity/internal/grpc/v1"
 	"identity/internal/interceptors"
@@ -24,14 +24,29 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+//mockery:generate: true
+type UserRepository interface {
+	GetUser(ctx context.Context, id pgtype.UUID) (db.User, error)
+	GetUserByEmail(ctx context.Context, email string) (db.User, error)
+	CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error)
+}
+
+//mockery:generate: true
+type RefreshTokenRepository interface {
+	GetUserByRefreshToken(ctx context.Context, token string) (db.User, error)
+	ExistRefreshTokenByUser(ctx context.Context, arg db.ExistRefreshTokenByUserParams) (bool, error)
+	CreateRefreshToken(ctx context.Context, arg db.CreateRefreshTokenParams) (db.RefreshToken, error)
+	DeleteRefreshToken(ctx context.Context, token string) error
+}
+
 type UserService struct {
 	logger           *slog.Logger
-	userRepo         dbgen.UserRepository
-	refreshTokenRepo dbgen.RefreshTokenRepository
+	userRepo         UserRepository
+	refreshTokenRepo RefreshTokenRepository
 	config           *config.Config
 }
 
-func NewUserService(logger *slog.Logger, userRepo dbgen.UserRepository, refreshTokenRepo dbgen.RefreshTokenRepository, config *config.Config) *UserService {
+func NewUserService(logger *slog.Logger, userRepo UserRepository, refreshTokenRepo RefreshTokenRepository, config *config.Config) *UserService {
 	return &UserService{
 		logger:           logger,
 		userRepo:         userRepo,
@@ -102,7 +117,7 @@ func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*e
 		return nil, status.Error(codes.Internal, "invalid user ID format")
 	}
 
-	ok, err = u.refreshTokenRepo.ExistRefreshTokenByUser(ctx, dbgen.ExistRefreshTokenByUserParams{
+	ok, err = u.refreshTokenRepo.ExistRefreshTokenByUser(ctx, db.ExistRefreshTokenByUserParams{
 		UserID: userUUID,
 		Token:  request.RefreshToken,
 	})
@@ -143,7 +158,7 @@ func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest)
 		return nil, status.Errorf(codes.Internal, "failed to hash password")
 	}
 
-	user, err := u.userRepo.CreateUser(ctx, dbgen.CreateUserParams{
+	user, err := u.userRepo.CreateUser(ctx, db.CreateUserParams{
 		Username: request.Username,
 		Email:    request.Email,
 		Password: hashedPassword,
@@ -249,7 +264,7 @@ func (u *UserService) createUserTokens(ctx context.Context, user_id pgtype.UUID,
 		return "", "", status.Errorf(codes.Internal, "failed to generate refresh token, try again")
 	}
 
-	_, err = u.refreshTokenRepo.CreateRefreshToken(ctx, dbgen.CreateRefreshTokenParams{
+	_, err = u.refreshTokenRepo.CreateRefreshToken(ctx, db.CreateRefreshTokenParams{
 		UserID: user_id,
 		Token:  refreshToken,
 		ExpiredAt: pgtype.Timestamptz{

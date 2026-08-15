@@ -16,10 +16,10 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 
 	"identity/internal/config"
-	"identity/internal/dbgen"
+	"identity/internal/db"
 	pb "identity/internal/grpc/v1"
 	"identity/internal/interceptors"
-	"identity/internal/service"
+	"identity/internal/services"
 )
 
 var _ pb.AuthServiceServer = (*server)(nil)
@@ -27,10 +27,10 @@ var _ pb.AuthServiceServer = (*server)(nil)
 type server struct {
 	pb.UnsafeAuthServiceServer
 	db          *pgxpool.Pool
-	authService *service.UserService
+	authService *services.UserService
 }
 
-func newServer(db *pgxpool.Pool, authService *service.UserService) *server {
+func newServer(db *pgxpool.Pool, authService *services.UserService) *server {
 	return &server{db: db, authService: authService}
 }
 
@@ -72,7 +72,7 @@ func StartServer() {
 	}
 	defer dbpool.Close()
 
-	queries := dbgen.New(dbpool)
+	queries := db.New(dbpool)
 
 	port := 50051
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
@@ -90,7 +90,7 @@ func StartServer() {
 	healthpb.RegisterHealthServer(grpcServer, healthServer)
 	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
 
-	authService := service.NewUserService(logger, queries, queries, config)
+	authService := services.NewUserService(logger, queries, queries, config)
 	pb.RegisterAuthServiceServer(grpcServer, newServer(dbpool, authService))
 	reflection.Register(grpcServer)
 	logger.Info("Run server")

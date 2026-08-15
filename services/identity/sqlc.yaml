@@ -5,7 +5,7 @@ sql:
     schema: "./sql/migrations"
     gen:
       go:
-        package: "dbgen"
-        out: "./internal/dbgen"
+        package: "db"
+        out: "./internal/db"
         sql_package: "pgx/v5"
         emit_interface: true

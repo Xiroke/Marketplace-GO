@@ -7,7 +7,7 @@ package mocks
 import (
 	"context"
 
-	"identity/internal/dbgen"
+	"identity/internal/db"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	mock "github.com/stretchr/testify/mock"
@@ -41,24 +41,24 @@ func (_m *MockUserRepository) EXPECT() *MockUserRepository_Expecter {
 }
 
 // CreateUser provides a mock function for the type MockUserRepository
-func (_mock *MockUserRepository) CreateUser(ctx context.Context, arg dbgen.CreateUserParams) (dbgen.User, error) {
+func (_mock *MockUserRepository) CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error) {
 	ret := _mock.Called(ctx, arg)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateUser")
 	}
 
-	var r0 dbgen.User
+	var r0 db.User
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, dbgen.CreateUserParams) (dbgen.User, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, db.CreateUserParams) (db.User, error)); ok {
 		return returnFunc(ctx, arg)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, dbgen.CreateUserParams) dbgen.User); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, db.CreateUserParams) db.User); ok {
 		r0 = returnFunc(ctx, arg)
 	} else {
-		r0 = ret.Get(0).(dbgen.User)
+		r0 = ret.Get(0).(db.User)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, dbgen.CreateUserParams) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, db.CreateUserParams) error); ok {
 		r1 = returnFunc(ctx, arg)
 	} else {
 		r1 = ret.Error(1)
@@ -73,20 +73,20 @@ type MockUserRepository_CreateUser_Call struct {
 
 // CreateUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - arg dbgen.CreateUserParams
+//   - arg db.CreateUserParams
 func (_e *MockUserRepository_Expecter) CreateUser(ctx any, arg any) *MockUserRepository_CreateUser_Call {
 	return &MockUserRepository_CreateUser_Call{Call: _e.mock.On("CreateUser", ctx, arg)}
 }
 
-func (_c *MockUserRepository_CreateUser_Call) Run(run func(ctx context.Context, arg dbgen.CreateUserParams)) *MockUserRepository_CreateUser_Call {
+func (_c *MockUserRepository_CreateUser_Call) Run(run func(ctx context.Context, arg db.CreateUserParams)) *MockUserRepository_CreateUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 dbgen.CreateUserParams
+		var arg1 db.CreateUserParams
 		if args[1] != nil {
-			arg1 = args[1].(dbgen.CreateUserParams)
+			arg1 = args[1].(db.CreateUserParams)
 		}
 		run(
 			arg0,
@@ -96,33 +96,33 @@ func (_c *MockUserRepository_CreateUser_Call) Run(run func(ctx context.Context, 
 	return _c
 }
 
-func (_c *MockUserRepository_CreateUser_Call) Return(user dbgen.User, err error) *MockUserRepository_CreateUser_Call {
+func (_c *MockUserRepository_CreateUser_Call) Return(user db.User, err error) *MockUserRepository_CreateUser_Call {
 	_c.Call.Return(user, err)
 	return _c
 }
 
-func (_c *MockUserRepository_CreateUser_Call) RunAndReturn(run func(ctx context.Context, arg dbgen.CreateUserParams) (dbgen.User, error)) *MockUserRepository_CreateUser_Call {
+func (_c *MockUserRepository_CreateUser_Call) RunAndReturn(run func(ctx context.Context, arg db.CreateUserParams) (db.User, error)) *MockUserRepository_CreateUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetUser provides a mock function for the type MockUserRepository
-func (_mock *MockUserRepository) GetUser(ctx context.Context, id pgtype.UUID) (dbgen.User, error) {
+func (_mock *MockUserRepository) GetUser(ctx context.Context, id pgtype.UUID) (db.User, error) {
 	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUser")
 	}
 
-	var r0 dbgen.User
+	var r0 db.User
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, pgtype.UUID) (dbgen.User, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, pgtype.UUID) (db.User, error)); ok {
 		return returnFunc(ctx, id)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, pgtype.UUID) dbgen.User); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, pgtype.UUID) db.User); ok {
 		r0 = returnFunc(ctx, id)
 	} else {
-		r0 = ret.Get(0).(dbgen.User)
+		r0 = ret.Get(0).(db.User)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, pgtype.UUID) error); ok {
 		r1 = returnFunc(ctx, id)
@@ -162,33 +162,33 @@ func (_c *MockUserRepository_GetUser_Call) Run(run func(ctx context.Context, id 
 	return _c
 }
 
-func (_c *MockUserRepository_GetUser_Call) Return(user dbgen.User, err error) *MockUserRepository_GetUser_Call {
+func (_c *MockUserRepository_GetUser_Call) Return(user db.User, err error) *MockUserRepository_GetUser_Call {
 	_c.Call.Return(user, err)
 	return _c
 }
 
-func (_c *MockUserRepository_GetUser_Call) RunAndReturn(run func(ctx context.Context, id pgtype.UUID) (dbgen.User, error)) *MockUserRepository_GetUser_Call {
+func (_c *MockUserRepository_GetUser_Call) RunAndReturn(run func(ctx context.Context, id pgtype.UUID) (db.User, error)) *MockUserRepository_GetUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetUserByEmail provides a mock function for the type MockUserRepository
-func (_mock *MockUserRepository) GetUserByEmail(ctx context.Context, email string) (dbgen.User, error) {
+func (_mock *MockUserRepository) GetUserByEmail(ctx context.Context, email string) (db.User, error) {
 	ret := _mock.Called(ctx, email)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserByEmail")
 	}
 
-	var r0 dbgen.User
+	var r0 db.User
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (dbgen.User, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (db.User, error)); ok {
 		return returnFunc(ctx, email)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) dbgen.User); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) db.User); ok {
 		r0 = returnFunc(ctx, email)
 	} else {
-		r0 = ret.Get(0).(dbgen.User)
+		r0 = ret.Get(0).(db.User)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = returnFunc(ctx, email)
@@ -228,12 +228,12 @@ func (_c *MockUserRepository_GetUserByEmail_Call) Run(run func(ctx context.Conte
 	return _c
 }
 
-func (_c *MockUserRepository_GetUserByEmail_Call) Return(user dbgen.User, err error) *MockUserRepository_GetUserByEmail_Call {
+func (_c *MockUserRepository_GetUserByEmail_Call) Return(user db.User, err error) *MockUserRepository_GetUserByEmail_Call {
 	_c.Call.Return(user, err)
 	return _c
 }
 
-func (_c *MockUserRepository_GetUserByEmail_Call) RunAndReturn(run func(ctx context.Context, email string) (dbgen.User, error)) *MockUserRepository_GetUserByEmail_Call {
+func (_c *MockUserRepository_GetUserByEmail_Call) RunAndReturn(run func(ctx context.Context, email string) (db.User, error)) *MockUserRepository_GetUserByEmail_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -266,24 +266,24 @@ func (_m *MockRefreshTokenRepository) EXPECT() *MockRefreshTokenRepository_Expec
 }
 
 // CreateRefreshToken provides a mock function for the type MockRefreshTokenRepository
-func (_mock *MockRefreshTokenRepository) CreateRefreshToken(ctx context.Context, arg dbgen.CreateRefreshTokenParams) (dbgen.RefreshToken, error) {
+func (_mock *MockRefreshTokenRepository) CreateRefreshToken(ctx context.Context, arg db.CreateRefreshTokenParams) (db.RefreshToken, error) {
 	ret := _mock.Called(ctx, arg)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateRefreshToken")
 	}
 
-	var r0 dbgen.RefreshToken
+	var r0 db.RefreshToken
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, dbgen.CreateRefreshTokenParams) (dbgen.RefreshToken, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, db.CreateRefreshTokenParams) (db.RefreshToken, error)); ok {
 		return returnFunc(ctx, arg)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, dbgen.CreateRefreshTokenParams) dbgen.RefreshToken); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, db.CreateRefreshTokenParams) db.RefreshToken); ok {
 		r0 = returnFunc(ctx, arg)
 	} else {
-		r0 = ret.Get(0).(dbgen.RefreshToken)
+		r0 = ret.Get(0).(db.RefreshToken)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, dbgen.CreateRefreshTokenParams) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, db.CreateRefreshTokenParams) error); ok {
 		r1 = returnFunc(ctx, arg)
 	} else {
 		r1 = ret.Error(1)
@@ -298,20 +298,20 @@ type MockRefreshTokenRepository_CreateRefreshToken_Call struct {
 
 // CreateRefreshToken is a helper method to define mock.On call
 //   - ctx context.Context
-//   - arg dbgen.CreateRefreshTokenParams
+//   - arg db.CreateRefreshTokenParams
 func (_e *MockRefreshTokenRepository_Expecter) CreateRefreshToken(ctx any, arg any) *MockRefreshTokenRepository_CreateRefreshToken_Call {
 	return &MockRefreshTokenRepository_CreateRefreshToken_Call{Call: _e.mock.On("CreateRefreshToken", ctx, arg)}
 }
 
-func (_c *MockRefreshTokenRepository_CreateRefreshToken_Call) Run(run func(ctx context.Context, arg dbgen.CreateRefreshTokenParams)) *MockRefreshTokenRepository_CreateRefreshToken_Call {
+func (_c *MockRefreshTokenRepository_CreateRefreshToken_Call) Run(run func(ctx context.Context, arg db.CreateRefreshTokenParams)) *MockRefreshTokenRepository_CreateRefreshToken_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 dbgen.CreateRefreshTokenParams
+		var arg1 db.CreateRefreshTokenParams
 		if args[1] != nil {
-			arg1 = args[1].(dbgen.CreateRefreshTokenParams)
+			arg1 = args[1].(db.CreateRefreshTokenParams)
 		}
 		run(
 			arg0,
@@ -321,12 +321,12 @@ func (_c *MockRefreshTokenRepository_CreateRefreshToken_Call) Run(run func(ctx c
 	return _c
 }
 
-func (_c *MockRefreshTokenRepository_CreateRefreshToken_Call) Return(refreshToken dbgen.RefreshToken, err error) *MockRefreshTokenRepository_CreateRefreshToken_Call {
+func (_c *MockRefreshTokenRepository_CreateRefreshToken_Call) Return(refreshToken db.RefreshToken, err error) *MockRefreshTokenRepository_CreateRefreshToken_Call {
 	_c.Call.Return(refreshToken, err)
 	return _c
 }
 
-func (_c *MockRefreshTokenRepository_CreateRefreshToken_Call) RunAndReturn(run func(ctx context.Context, arg dbgen.CreateRefreshTokenParams) (dbgen.RefreshToken, error)) *MockRefreshTokenRepository_CreateRefreshToken_Call {
+func (_c *MockRefreshTokenRepository_CreateRefreshToken_Call) RunAndReturn(run func(ctx context.Context, arg db.CreateRefreshTokenParams) (db.RefreshToken, error)) *MockRefreshTokenRepository_CreateRefreshToken_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -389,7 +389,7 @@ func (_c *MockRefreshTokenRepository_DeleteRefreshToken_Call) RunAndReturn(run f
 }
 
 // ExistRefreshTokenByUser provides a mock function for the type MockRefreshTokenRepository
-func (_mock *MockRefreshTokenRepository) ExistRefreshTokenByUser(ctx context.Context, arg dbgen.ExistRefreshTokenByUserParams) (bool, error) {
+func (_mock *MockRefreshTokenRepository) ExistRefreshTokenByUser(ctx context.Context, arg db.ExistRefreshTokenByUserParams) (bool, error) {
 	ret := _mock.Called(ctx, arg)
 
 	if len(ret) == 0 {
@@ -398,15 +398,15 @@ func (_mock *MockRefreshTokenRepository) ExistRefreshTokenByUser(ctx context.Con
 
 	var r0 bool
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, dbgen.ExistRefreshTokenByUserParams) (bool, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, db.ExistRefreshTokenByUserParams) (bool, error)); ok {
 		return returnFunc(ctx, arg)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, dbgen.ExistRefreshTokenByUserParams) bool); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, db.ExistRefreshTokenByUserParams) bool); ok {
 		r0 = returnFunc(ctx, arg)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, dbgen.ExistRefreshTokenByUserParams) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, db.ExistRefreshTokenByUserParams) error); ok {
 		r1 = returnFunc(ctx, arg)
 	} else {
 		r1 = ret.Error(1)
@@ -421,20 +421,20 @@ type MockRefreshTokenRepository_ExistRefreshTokenByUser_Call struct {
 
 // ExistRefreshTokenByUser is a helper method to define mock.On call
 //   - ctx context.Context
-//   - arg dbgen.ExistRefreshTokenByUserParams
+//   - arg db.ExistRefreshTokenByUserParams
 func (_e *MockRefreshTokenRepository_Expecter) ExistRefreshTokenByUser(ctx any, arg any) *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call {
 	return &MockRefreshTokenRepository_ExistRefreshTokenByUser_Call{Call: _e.mock.On("ExistRefreshTokenByUser", ctx, arg)}
 }
 
-func (_c *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call) Run(run func(ctx context.Context, arg dbgen.ExistRefreshTokenByUserParams)) *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call {
+func (_c *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call) Run(run func(ctx context.Context, arg db.ExistRefreshTokenByUserParams)) *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 dbgen.ExistRefreshTokenByUserParams
+		var arg1 db.ExistRefreshTokenByUserParams
 		if args[1] != nil {
-			arg1 = args[1].(dbgen.ExistRefreshTokenByUserParams)
+			arg1 = args[1].(db.ExistRefreshTokenByUserParams)
 		}
 		run(
 			arg0,
@@ -449,28 +449,28 @@ func (_c *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call) Return(b bool
 	return _c
 }
 
-func (_c *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call) RunAndReturn(run func(ctx context.Context, arg dbgen.ExistRefreshTokenByUserParams) (bool, error)) *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call {
+func (_c *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call) RunAndReturn(run func(ctx context.Context, arg db.ExistRefreshTokenByUserParams) (bool, error)) *MockRefreshTokenRepository_ExistRefreshTokenByUser_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetUserByRefreshToken provides a mock function for the type MockRefreshTokenRepository
-func (_mock *MockRefreshTokenRepository) GetUserByRefreshToken(ctx context.Context, token string) (dbgen.User, error) {
+func (_mock *MockRefreshTokenRepository) GetUserByRefreshToken(ctx context.Context, token string) (db.User, error) {
 	ret := _mock.Called(ctx, token)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserByRefreshToken")
 	}
 
-	var r0 dbgen.User
+	var r0 db.User
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (dbgen.User, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (db.User, error)); ok {
 		return returnFunc(ctx, token)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) dbgen.User); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) db.User); ok {
 		r0 = returnFunc(ctx, token)
 	} else {
-		r0 = ret.Get(0).(dbgen.User)
+		r0 = ret.Get(0).(db.User)
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = returnFunc(ctx, token)
@@ -510,12 +510,12 @@ func (_c *MockRefreshTokenRepository_GetUserByRefreshToken_Call) Run(run func(ct
 	return _c
 }
 
-func (_c *MockRefreshTokenRepository_GetUserByRefreshToken_Call) Return(user dbgen.User, err error) *MockRefreshTokenRepository_GetUserByRefreshToken_Call {
+func (_c *MockRefreshTokenRepository_GetUserByRefreshToken_Call) Return(user db.User, err error) *MockRefreshTokenRepository_GetUserByRefreshToken_Call {
 	_c.Call.Return(user, err)
 	return _c
 }
 
-func (_c *MockRefreshTokenRepository_GetUserByRefreshToken_Call) RunAndReturn(run func(ctx context.Context, token string) (dbgen.User, error)) *MockRefreshTokenRepository_GetUserByRefreshToken_Call {
+func (_c *MockRefreshTokenRepository_GetUserByRefreshToken_Call) RunAndReturn(run func(ctx context.Context, token string) (db.User, error)) *MockRefreshTokenRepository_GetUserByRefreshToken_Call {
 	_c.Call.Return(run)
 	return _c
 }

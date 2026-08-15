@@ -22,7 +22,7 @@ require-template-schema-exists: true
 template: testify
 template-schema: '{{.Template}}.schema.json'
 packages:
-  identity/internal/dbgen:
+  identity/internal/services:
     config:
-      dir: internal/dbgen/mocks
+      dir: internal/services/mocks
       pkgname: mocks

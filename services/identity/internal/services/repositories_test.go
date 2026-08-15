@@ -1,10 +1,11 @@
-package dbgen
+package services
 
 import (
 	"context"
 	"testing"
 	"time"
 
+	"identity/internal/db"
 	"identity/internal/tests/testutils"
 	"identity/internal/token"
 
@@ -15,7 +16,7 @@ import (
 
 func TestUserRepository_CreateUser(t *testing.T) {
 	testutils.CleanDB(t, testDBPool)
-	queries := New(testDBPool)
+	queries := db.New(testDBPool)
 
 	testUsername := "user"
 	testEmail := "user@example.com"
@@ -25,7 +26,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 	require.NoError(t, err, "failed to hash password for test")
-	res, err := userRepo.CreateUser(context.Background(), CreateUserParams{
+	res, err := userRepo.CreateUser(context.Background(), db.CreateUserParams{
 		Username: testUsername,
 		Email:    testEmail,
 		Password: string(hashedBytes),
@@ -40,7 +41,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 
 func TestUserRepository_GetUser(t *testing.T) {
 	testutils.CleanDB(t, testDBPool)
-	queries := New(testDBPool)
+	queries := db.New(testDBPool)
 
 	var userRepo UserRepository = queries
 	user, err := seedUser(userRepo)
@@ -56,7 +57,7 @@ func TestUserRepository_GetUser(t *testing.T) {
 
 func TestUserRepository_GetUserByEmail(t *testing.T) {
 	testutils.CleanDB(t, testDBPool)
-	queries := New(testDBPool)
+	queries := db.New(testDBPool)
 
 	var userRepo UserRepository = queries
 	user, err := seedUser(userRepo)
@@ -72,7 +73,7 @@ func TestUserRepository_GetUserByEmail(t *testing.T) {
 
 func TestRefreshTokenRepository_GetUserByEmail(t *testing.T) {
 	testutils.CleanDB(t, testDBPool)
-	queries := New(testDBPool)
+	queries := db.New(testDBPool)
 
 	var userRepo UserRepository = queries
 	var refreshTokenRepo RefreshTokenRepository = queries
@@ -91,7 +92,7 @@ func TestRefreshTokenRepository_GetUserByEmail(t *testing.T) {
 
 func TestRefreshTokenRepository_ExistRefreshTokenByUser(t *testing.T) {
 	testutils.CleanDB(t, testDBPool)
-	queries := New(testDBPool)
+	queries := db.New(testDBPool)
 
 	var userRepo UserRepository = queries
 	var refreshTokenRepo RefreshTokenRepository = queries
@@ -100,7 +101,7 @@ func TestRefreshTokenRepository_ExistRefreshTokenByUser(t *testing.T) {
 	refreshToken, _, err := seedTokens(context.Background(), refreshTokenRepo, []byte("secret"), user.ID)
 	require.NoError(t, err, "failed to seed tokens")
 
-	res, err := refreshTokenRepo.ExistRefreshTokenByUser(context.Background(), ExistRefreshTokenByUserParams{
+	res, err := refreshTokenRepo.ExistRefreshTokenByUser(context.Background(), db.ExistRefreshTokenByUserParams{
 		UserID: user.ID,
 		Token:  refreshToken,
 	})
@@ -111,7 +112,7 @@ func TestRefreshTokenRepository_ExistRefreshTokenByUser(t *testing.T) {
 
 func TestRefreshTokenRepository_CreateRefreshToken(t *testing.T) {
 	testutils.CleanDB(t, testDBPool)
-	queries := New(testDBPool)
+	queries := db.New(testDBPool)
 
 	var userRepo UserRepository = queries
 	var refreshTokenRepo RefreshTokenRepository = queries
@@ -121,7 +122,7 @@ func TestRefreshTokenRepository_CreateRefreshToken(t *testing.T) {
 	refreshToken, err := token.GenerateRefreshToken(32)
 	require.NoError(t, err, "failed to seed user")
 
-	res, err := refreshTokenRepo.CreateRefreshToken(context.Background(), CreateRefreshTokenParams{
+	res, err := refreshTokenRepo.CreateRefreshToken(context.Background(), db.CreateRefreshTokenParams{
 		Token:  refreshToken,
 		UserID: user.ID,
 		ExpiredAt: pgtype.Timestamptz{
@@ -136,7 +137,7 @@ func TestRefreshTokenRepository_CreateRefreshToken(t *testing.T) {
 
 func TestRefreshTokenRepository_DeleteRefreshToken(t *testing.T) {
 	testutils.CleanDB(t, testDBPool)
-	queries := New(testDBPool)
+	queries := db.New(testDBPool)
 
 	var userRepo UserRepository = queries
 	var refreshTokenRepo RefreshTokenRepository = queries
@@ -147,7 +148,7 @@ func TestRefreshTokenRepository_DeleteRefreshToken(t *testing.T) {
 
 	err = refreshTokenRepo.DeleteRefreshToken(context.Background(), refreshToken)
 	require.NoError(t, err, "failed delete refresh token")
-	ok, err := refreshTokenRepo.ExistRefreshTokenByUser(context.Background(), ExistRefreshTokenByUserParams{
+	ok, err := refreshTokenRepo.ExistRefreshTokenByUser(context.Background(), db.ExistRefreshTokenByUserParams{
 		UserID: user.ID,
 		Token:  refreshToken,
 	})

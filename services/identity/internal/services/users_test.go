@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"identity/internal/config"
-	"identity/internal/dbgen"
-	"identity/internal/dbgen/mocks"
+	"identity/internal/db"
 	pb "identity/internal/grpc/v1"
 	"identity/internal/interceptors"
+	"identity/internal/services/mocks"
 	"identity/internal/token"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -37,7 +37,7 @@ func TestUserService_Login_Success(t *testing.T) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 	require.NoError(t, err, "failed to hash password for test")
 
-	expectedUser := dbgen.User{
+	expectedUser := db.User{
 		ID:       pgtype.UUID{Bytes: [16]byte{1}, Valid: true},
 		Username: "user",
 		Email:    testEmail,
@@ -52,8 +52,8 @@ func TestUserService_Login_Success(t *testing.T) {
 	refreshToken, err := token.GenerateRefreshToken(32)
 	require.NoError(t, err, "failed to generate refresh token")
 	refreshTokenMockRepo.EXPECT().
-		CreateRefreshToken(mock.Anything, mock.AnythingOfType("dbgen.CreateRefreshTokenParams")).
-		Return(dbgen.RefreshToken{
+		CreateRefreshToken(mock.Anything, mock.AnythingOfType("db.CreateRefreshTokenParams")).
+		Return(db.RefreshToken{
 			Token:  refreshToken,
 			UserID: expectedUser.ID,
 			ExpiredAt: pgtype.Timestamptz{
@@ -96,7 +96,7 @@ func TestUserService_Register_Success(t *testing.T) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 	require.NoError(t, err, "failed to hash password for test")
 
-	expectedUser := dbgen.User{
+	expectedUser := db.User{
 		ID:       pgtype.UUID{Bytes: [16]byte{1}, Valid: true},
 		Username: "user",
 		Email:    testEmail,
@@ -104,15 +104,15 @@ func TestUserService_Register_Success(t *testing.T) {
 	}
 
 	userMockRepo.EXPECT().
-		CreateUser(mock.Anything, mock.AnythingOfType("dbgen.CreateUserParams")).
+		CreateUser(mock.Anything, mock.AnythingOfType("db.CreateUserParams")).
 		Return(expectedUser, nil).
 		Once()
 
 	refreshToken, err := token.GenerateRefreshToken(32)
 	require.NoError(t, err, "failed to generate refresh token")
 	refreshTokenMockRepo.EXPECT().
-		CreateRefreshToken(mock.Anything, mock.AnythingOfType("dbgen.CreateRefreshTokenParams")).
-		Return(dbgen.RefreshToken{
+		CreateRefreshToken(mock.Anything, mock.AnythingOfType("db.CreateRefreshTokenParams")).
+		Return(db.RefreshToken{
 			Token:  refreshToken,
 			UserID: expectedUser.ID,
 			ExpiredAt: pgtype.Timestamptz{
@@ -156,7 +156,7 @@ func TestUserService_Logout_Success(t *testing.T) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 	require.NoError(t, err, "failed to hash password for test")
 
-	expectedUser := dbgen.User{
+	expectedUser := db.User{
 		ID:       pgtype.UUID{Bytes: [16]byte{1}, Valid: true},
 		Username: "user",
 		Email:    testEmail,
@@ -166,7 +166,7 @@ func TestUserService_Logout_Success(t *testing.T) {
 	require.NoError(t, err, "failed to generate refresh token")
 
 	refreshTokenMockRepo.EXPECT().
-		ExistRefreshTokenByUser(mock.Anything, mock.AnythingOfType("dbgen.ExistRefreshTokenByUserParams")).
+		ExistRefreshTokenByUser(mock.Anything, mock.AnythingOfType("db.ExistRefreshTokenByUserParams")).
 		Return(true, nil).
 		Once()
 
@@ -206,7 +206,7 @@ func TestUserService_RefreshAccessToken_Success(t *testing.T) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 	require.NoError(t, err, "failed to hash password for test")
 
-	expectedUser := dbgen.User{
+	expectedUser := db.User{
 		ID:       pgtype.UUID{Bytes: [16]byte{1}, Valid: true},
 		Username: "user",
 		Email:    testEmail,

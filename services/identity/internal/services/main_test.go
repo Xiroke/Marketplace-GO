@@ -1,4 +1,4 @@
-package dbgen
+package services
 
 import (
 	"context"

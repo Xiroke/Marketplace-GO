@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"identity/internal/config"
-	"identity/internal/dbgen"
+	"identity/internal/db"
 	"identity/internal/token"
 
 	"google.golang.org/grpc"
@@ -18,7 +18,7 @@ type ctxKey string
 
 const UserKey ctxKey = "user"
 
-func GetAuthUnaryInterceptor(methodsWithAuth map[string]bool, config *config.Config, queries *dbgen.Queries) func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+func GetAuthUnaryInterceptor(methodsWithAuth map[string]bool, config *config.Config, queries *db.Queries) func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		if !methodsWithAuth[info.FullMethod] {
 			return handler(ctx, req)

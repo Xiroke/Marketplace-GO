@@ -1,10 +1,11 @@
-package dbgen
+package services
 
 import (
 	"context"
 	"errors"
 	"time"
 
+	"identity/internal/db"
 	"identity/internal/errs"
 	"identity/internal/token"
 
@@ -12,7 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func seedUser(userRepo UserRepository) (*User, error) {
+func seedUser(userRepo UserRepository) (*db.User, error) {
 	testUsername := "user"
 	testEmail := "user@example.com"
 	rawPassword := "P@ssw0rd"
@@ -22,7 +23,7 @@ func seedUser(userRepo UserRepository) (*User, error) {
 		return nil, err
 	}
 
-	user, err := userRepo.CreateUser(context.Background(), CreateUserParams{
+	user, err := userRepo.CreateUser(context.Background(), db.CreateUserParams{
 		Username: testUsername,
 		Email:    testEmail,
 		Password: string(hashedBytes),
@@ -40,7 +41,7 @@ func seedTokens(ctx context.Context, refreshTokenRepo RefreshTokenRepository, JW
 		return "", "", errors.New("failed to seed refresh token")
 	}
 
-	_, err = refreshTokenRepo.CreateRefreshToken(ctx, CreateRefreshTokenParams{
+	_, err = refreshTokenRepo.CreateRefreshToken(ctx, db.CreateRefreshTokenParams{
 		UserID: user_id,
 		Token:  refreshToken,
 		ExpiredAt: pgtype.Timestamptz{

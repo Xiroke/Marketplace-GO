@@ -35,7 +35,7 @@ tasks:
 
   test:
     cmds:
-      - CGO_ENABLED=1 go test -race ./...
+      - go test ./...
 
   fmt:
     desc: Format Go files

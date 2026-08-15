@@ -3,7 +3,7 @@
 //   sqlc v1.31.1
 // source: refresh_tokens.sql
 
-package dbgen
+package db
 
 import (
 	"context"
