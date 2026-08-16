@@ -19,6 +19,7 @@ func NewConfig() *Config {
 	_ = godotenv.Load()
 
 	return &Config{
+        JWT_SECRET: []byte(getEnvOrPanic("JWT_SECRET")),
 		DB: PostgresConfig{
 			DATABASE_URL: "postgresql://" + getEnvOrPanic("POSTGRES_USER") + ":" + getEnvOrPanic("POSTGRES_PASSWORD") + "@localhost:5432/" + getEnvOrPanic("POSTGRES_DB"),
 		},

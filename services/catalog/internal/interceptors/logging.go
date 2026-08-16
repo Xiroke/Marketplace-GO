@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 func LoggingInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
@@ -15,11 +16,13 @@ func LoggingInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
         if err != nil {
             var appError *errs.AppError
              if (errors.As(err, &appError)) {
-                logger.Error("application error",
-                    "code", appError.Code,
-                    "msg", appError.Msg,
-                    "cause", appError.Err,
-                )
+                if appError.Code == codes.Internal {
+                    logger.Error("internal error",
+                        "code", appError.Code,
+                        "msg", appError.Msg,
+                        "cause", appError.Err,
+                    )
+                }
              } else {
                 logger.Error("unexpected error",
                     "error", err,

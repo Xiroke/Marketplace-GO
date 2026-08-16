@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+//mockery:generate: true
 type ProductRepository interface {
 	CreateProduct(ctx context.Context, arg db.CreateProductParams) (db.Product, error)
 	GetProduct(ctx context.Context, id pgtype.UUID) (db.Product, error)

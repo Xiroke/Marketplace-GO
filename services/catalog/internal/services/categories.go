@@ -10,6 +10,7 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
+//mockery:generate: true
 type CategoryRepository interface {
 	CreateCategory(ctx context.Context, arg db.CreateCategoryParams) (db.Category, error)
 }

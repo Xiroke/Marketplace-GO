@@ -5,11 +5,11 @@ version: "3"
 tasks:
   run:
     cmds:
-      - go run ./cmd/identity/main.go
+      - go run ./cmd/catalog/main.go
 
   build:
     cmds:
-      - go build -o bin/ ./cmd/identity/main.go
+      - go build -o bin/ ./cmd/catalog/main.go
 
   goose-create:*:
     vars:
@@ -35,12 +35,12 @@ tasks:
 
   test:
     cmds:
-      - CGO_ENABLED=1 go test -race ./...
+      - go test ./...
 
   fmt:
     desc: Format Go files
     cmds:
-      - goimports -w -local identity/ .
+      - goimports -w -local catalog/ .
       - gofmt -w .
 
   vet:

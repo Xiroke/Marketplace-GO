@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: task-pre-commit
         name: Do pre-commit using Taskfile
-        entry: sh -c 'cd services/identity && task pre-commit'
+        entry: sh -c 'cd services/catalog && task pre-commit'
         language: system
         pass_filenames: false
         always_run: true
