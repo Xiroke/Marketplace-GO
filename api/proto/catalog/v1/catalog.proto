@@ -1,8 +1,7 @@
 syntax = "proto3";
 
-package identity.v1;
-option go_package = "grpc/v1;catalogv1";
-import "google/protobuf/empty.proto";
+package catalog.v1;
+option go_package = "identity/v1;catalogv1";
 import "google/protobuf/timestamp.proto";
 
 message CreateProductRequest {

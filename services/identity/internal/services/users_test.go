@@ -9,7 +9,7 @@ import (
 
 	"identity/internal/config"
 	"identity/internal/db"
-	pb "identity/internal/grpc/v1"
+	pb "identity/internal/grpc/identity/v1"
 	"identity/internal/interceptors"
 	"identity/internal/services/mocks"
 	"identity/internal/token"

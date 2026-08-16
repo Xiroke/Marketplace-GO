@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v7.35.1
-// source: internal/grpc/v1/catalog.proto
+// source: catalog/v1/catalog.proto
 
 package catalogv1
 
@@ -19,11 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CatalogService_CreateProduct_FullMethodName         = "/identity.v1.CatalogService/CreateProduct"
-	CatalogService_GetProduct_FullMethodName            = "/identity.v1.CatalogService/GetProduct"
-	CatalogService_GetProductsByCreator_FullMethodName  = "/identity.v1.CatalogService/GetProductsByCreator"
-	CatalogService_GetProductsByCategory_FullMethodName = "/identity.v1.CatalogService/GetProductsByCategory"
-	CatalogService_CreateCategory_FullMethodName        = "/identity.v1.CatalogService/CreateCategory"
+	CatalogService_CreateProduct_FullMethodName         = "/catalog.v1.CatalogService/CreateProduct"
+	CatalogService_GetProduct_FullMethodName            = "/catalog.v1.CatalogService/GetProduct"
+	CatalogService_GetProductsByCreator_FullMethodName  = "/catalog.v1.CatalogService/GetProductsByCreator"
+	CatalogService_GetProductsByCategory_FullMethodName = "/catalog.v1.CatalogService/GetProductsByCategory"
+	CatalogService_CreateCategory_FullMethodName        = "/catalog.v1.CatalogService/CreateCategory"
 )
 
 // CatalogServiceClient is the client API for CatalogService service.
@@ -244,7 +244,7 @@ func _CatalogService_CreateCategory_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CatalogService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "identity.v1.CatalogService",
+	ServiceName: "catalog.v1.CatalogService",
 	HandlerType: (*CatalogServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -269,5 +269,5 @@ var CatalogService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "internal/grpc/v1/catalog.proto",
+	Metadata: "catalog/v1/catalog.proto",
 }

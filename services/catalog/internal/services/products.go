@@ -3,7 +3,7 @@ package services
 import (
 	"catalog/internal/db"
 	"catalog/internal/errs"
-	pb "catalog/internal/grpc/v1"
+	pb "catalog/internal/grpc/catalog/v1"
 	"catalog/internal/utils"
 	"context"
 
@@ -49,7 +49,7 @@ func (s *ProductService) CreateProduct(ctx context.Context, req *pb.CreateProduc
         return nil, errs.Internal("failed to create product", err)
     }
 
-    priceStr, err := utils.NumericToString(product.Price)
+    priceStr, appErr := utils.NumericToString(product.Price)
     if appErr != nil {
         return nil, appErr
     }

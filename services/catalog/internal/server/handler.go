@@ -1,7 +1,7 @@
 package server
 
 import (
-	pb "catalog/internal/grpc/v1"
+	pb "catalog/internal/grpc/catalog/v1"
 	"catalog/internal/services"
 	"catalog/internal/utils"
 	"context"

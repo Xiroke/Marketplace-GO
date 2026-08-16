@@ -31,8 +31,22 @@ tasks:
 
   grpc-gen:
     cmds:
-      - protoc -I=./../identity/internal/grpc/v1 --go_out=./internal/grpc/identity/v1 --go_opt=paths=source_relative --go-grpc_out=./internal/grpc/identity/v1 --go-grpc_opt=paths=source_relative ./../identity/internal/grpc/v1/*.proto
-      - protoc -I=./../catalog/internal/grpc/v1 --go_out=./internal/grpc/catalog/v1 --go_opt=paths=source_relative --go-grpc_out=./internal/grpc/catalog/v1 --go-grpc_opt=paths=source_relative ./../catalog/internal/grpc/v1/*.proto
+    - >
+        protoc
+        -I=../../api/proto
+        --go_out=internal/grpc
+        --go_opt=paths=source_relative
+        --go-grpc_out=internal/grpc
+        --go-grpc_opt=paths=source_relative
+        ../../api/proto/identity/v1/*.proto
+    - >
+        protoc
+        -I=../../api/proto
+        --go_out=internal/grpc
+        --go_opt=paths=source_relative
+        --go-grpc_out=internal/grpc
+        --go-grpc_opt=paths=source_relative
+        ../../api/proto/catalog/v1/*.proto
 
   swagger-gen:
     desc: Generate Swagger docs

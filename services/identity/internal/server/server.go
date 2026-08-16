@@ -17,7 +17,7 @@ import (
 
 	"identity/internal/config"
 	"identity/internal/db"
-	pb "identity/internal/grpc/v1"
+	pb "identity/internal/grpc/identity/v1"
 	"identity/internal/interceptors"
 	"identity/internal/services"
 )
@@ -74,8 +74,7 @@ func StartServer() {
 
 	queries := db.New(dbpool)
 
-	port := 50051
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+	lis, err := net.Listen("tcp", config.ADDRESS)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

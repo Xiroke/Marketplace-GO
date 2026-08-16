@@ -10,7 +10,7 @@ import (
 	"identity/internal/config"
 	"identity/internal/db"
 	"identity/internal/errs"
-	pb "identity/internal/grpc/v1"
+	pb "identity/internal/grpc/identity/v1"
 	"identity/internal/interceptors"
 	"identity/internal/token"
 	"identity/internal/utils"

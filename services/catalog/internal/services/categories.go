@@ -3,7 +3,7 @@ package services
 import (
 	"catalog/internal/db"
 	"catalog/internal/errs"
-	pb "catalog/internal/grpc/v1"
+	pb "catalog/internal/grpc/catalog/v1"
 	"context"
 
 	"github.com/jackc/pgx/v5/pgtype"

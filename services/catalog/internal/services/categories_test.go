@@ -2,7 +2,7 @@ package services
 
 import (
 	"catalog/internal/db"
-	catalogv1 "catalog/internal/grpc/v1"
+	catalogv1 "catalog/internal/grpc/catalog/v1"
 	"catalog/internal/services/mocks"
 	"context"
 	"testing"
