@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  run:
+    cmds:
+      - go run ./cmd/api-gateway/main.go
+
+  build:
+    cmds:
+      - go build -o bin/ ./cmd/api-gateway/main.go
+
+  goose-create:*:
+    vars:
+      NAME: '{{index .MATCH 0}}'
+    cmds:
+      - goose create -dir ./sql/migrations {{.NAME}} sql
+
+  goose-up:
+    cmds:
+      - goose up -dir ./sql/migrations
+
+  goose-down:
+    cmds:
+      - goose down -dir ./sql/migrations
+
+  sqlc:
+    cmds:
+      - sqlc generate
+
+  grpc-gen:
+    cmds:
+      - protoc -I=./../identity/internal/grpc/v1 --go_out=./internal/grpc/identity/v1 --go_opt=paths=source_relative --go-grpc_out=./internal/grpc/identity/v1 --go-grpc_opt=paths=source_relative ./../identity/internal/grpc/v1/*.proto
+      - protoc -I=./../catalog/internal/grpc/v1 --go_out=./internal/grpc/catalog/v1 --go_opt=paths=source_relative --go-grpc_out=./internal/grpc/catalog/v1 --go-grpc_opt=paths=source_relative ./../catalog/internal/grpc/v1/*.proto
+
+  swagger-gen:
+    desc: Generate Swagger docs
+    cmds:
+      - swag init -g ./main.go --output ./internal/swagger --dir ./cmd/api-gateway
+
+  test:
+    cmds:
+      - go test ./...
+
+  fmt:
+    desc: Format Go files
+    cmds:
+      - goimports -w -local api-gateway/ .
+      - gofmt -w .
+
+  vet:
+    desc: Run go vet
+    cmds:
+      - go vet ./...
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run ./...
+
+  check:
+    desc: Run all checks
+    deps: [fmt, vet, lint]
+
+  pre-commit:
+    desc: Run pre-commit checks
+    cmds:
+      - task: fmt
+      - task: vet
+      - task: lint
+      - git add -u
