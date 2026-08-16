@@ -3,7 +3,7 @@ package server
 import (
 	"catalog/internal/config"
 	"catalog/internal/db"
-	pb "catalog/internal/grpc/v1"
+	pb "catalog/internal/grpc/catalog/v1"
 	"catalog/internal/interceptors"
 	"catalog/internal/services"
 	"context"
@@ -17,14 +17,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
-
-var methodsWithAuth = map[string]bool{
-	"/identity.v1.CatalogService/CreateCategory":              true,
-	"/identity.v1.CatalogService/CreateProduct":           true,
-	"/identity.v1.CatalogService/GetProduct": true,
-	"/identity.v1.CatalogService/GetProductsByCategories":             true,
-	"/identity.v1.CatalogService/GetProductsByCreator":             true,
-}
 
 func RunServer() {
     config := config.NewConfig()
@@ -48,7 +40,6 @@ func RunServer() {
 	}
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(interceptors.LoggingInterceptor(logger)),
-		grpc.UnaryInterceptor(interceptors.GetAuthUnaryInterceptor(methodsWithAuth, config, queries)),
 	}
 
     grpcServer := grpc.NewServer(opts...)

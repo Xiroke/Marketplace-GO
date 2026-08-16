@@ -11,7 +11,7 @@ type PostgresConfig struct {
 }
 
 type Config struct {
-	JWT_SECRET []byte
+    ADDRESS string
 	DB         PostgresConfig
 }
 
@@ -19,7 +19,7 @@ func NewConfig() *Config {
 	_ = godotenv.Load()
 
 	return &Config{
-        JWT_SECRET: []byte(getEnvOrPanic("JWT_SECRET")),
+        ADDRESS: getEnvOrPanic("ADDRESS"),
 		DB: PostgresConfig{
 			DATABASE_URL: "postgresql://" + getEnvOrPanic("POSTGRES_USER") + ":" + getEnvOrPanic("POSTGRES_PASSWORD") + "@localhost:5432/" + getEnvOrPanic("POSTGRES_DB"),
 		},
