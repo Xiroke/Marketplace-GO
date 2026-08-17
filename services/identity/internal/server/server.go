@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"net"
 	"os"
@@ -58,14 +57,18 @@ var methodsWithAuth = map[string]bool{
 }
 
 func StartServer() {
-	config := config.NewConfig()
-
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
 	}))
 	slog.SetDefault(logger)
 
-	dbpool, err := pgxpool.New(context.Background(), config.DB.DATABASE_URL)
+	config, err := config.NewConfig()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	dbpool, err := pgxpool.New(context.Background(), config.DB.DSN())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)
@@ -74,9 +77,10 @@ func StartServer() {
 
 	queries := db.New(dbpool)
 
-	lis, err := net.Listen("tcp", config.ADDRESS)
+	lis, err := net.Listen("tcp", config.App.Address())
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.Error("failed to start net.Listen", "error", err)
+		os.Exit(1)
 	}
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(interceptors.GetAuthUnaryInterceptor(methodsWithAuth, config, queries)),

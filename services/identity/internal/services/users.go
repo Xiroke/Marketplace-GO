@@ -219,7 +219,7 @@ func (u *UserService) RefreshAccessToken(ctx context.Context, request *pb.Refres
 		return nil, status.Errorf(codes.Unauthenticated, "invalid refresh token")
 	}
 
-	accessToken, err := token.GenerateAccessToken(u.config.JWT_SECRET, user.ID.String())
+	accessToken, err := token.GenerateAccessToken(u.config.JWTSecret, user.ID.String())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate access token, try again")
 	}
@@ -280,7 +280,7 @@ func (u *UserService) createUserTokens(ctx context.Context, user_id pgtype.UUID,
 		return "", "", status.Errorf(codes.Internal, "failed to create refresh token, try again")
 	}
 
-	accessToken, err := token.GenerateAccessToken(u.config.JWT_SECRET, user_id.String())
+	accessToken, err := token.GenerateAccessToken(u.config.JWTSecret, user_id.String())
 	if err != nil {
 		return "", "", status.Errorf(codes.Internal, "failed to generate access token, try again")
 	}

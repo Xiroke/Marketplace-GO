@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"catalog/internal/errs"
+	"api-gateway/internal/errs"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"

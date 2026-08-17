@@ -1,38 +1,55 @@
 package config
 
 import (
-	"os"
+	"fmt"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
 )
 
 type PostgresConfig struct {
-	DATABASE_URL string
+	User     string `env:"POSTGRES_USER,required"`
+	Password string `env:"POSTGRES_PASSWORD,required"`
+	Host     string `env:"POSTGRES_HOST,required"`
+	Port     string `env:"POSTGRES_PORT,required"`
+	DBName   string `env:"POSTGRES_DB,required"`
+}
+
+func (p *PostgresConfig) DSN() string {
+	return fmt.Sprintf(
+		"postgresql://%s:%s@%s:%s/%s",
+		p.User,
+		p.Password,
+		p.Host,
+		p.Port,
+		p.DBName,
+	)
+}
+
+type AppConfig struct {
+	Host string `env:"HOST"`
+	Port string `env:"PORT" envDefault:"8080"`
+}
+
+func (c *AppConfig) Address() string {
+	return fmt.Sprintf("%s:%s", c.Host, c.Port)
 }
 
 type Config struct {
-	ADDRESS    string
-	JWT_SECRET []byte
-	DB         PostgresConfig
+	JWTSecret []byte `env:"JWTSecret,required"`
+
+	App AppConfig
+	DB  PostgresConfig
 }
 
-func NewConfig() *Config {
+func NewConfig() (*Config, error) {
 	_ = godotenv.Load()
 
-	return &Config{
-		ADDRESS:    getEnvOrPanic("ADDRESS"),
-		JWT_SECRET: []byte(getEnvOrPanic("JWT_SECRET")),
-		DB: PostgresConfig{
-			DATABASE_URL: "postgresql://" + getEnvOrPanic("POSTGRES_USER") + ":" + getEnvOrPanic("POSTGRES_PASSWORD") + "@localhost:5432/" + getEnvOrPanic("POSTGRES_DB"),
-		},
-	}
-}
+	cfg, err := env.ParseAs[Config]()
 
-func getEnvOrPanic(key string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
 
-	msg := "You must pass " + key + " in .env"
-	panic(msg)
+	return &cfg, nil
 }

@@ -36,7 +36,7 @@ func GetAuthUnaryInterceptor(methodsWithAuth map[string]bool, config *config.Con
 
 		accessToken := strings.TrimPrefix(authorization[0], "Bearer ")
 
-		user, err := token.DecodeAccessToken(config.JWT_SECRET, accessToken)
+		user, err := token.DecodeAccessToken(config.JWTSecret, accessToken)
 		if err != nil {
 			return nil, status.Error(codes.Unauthenticated, "invalid token")
 		}

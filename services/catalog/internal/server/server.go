@@ -1,17 +1,16 @@
 package server
 
 import (
+	"context"
+	"log/slog"
+	"net"
+	"os"
+
 	"catalog/internal/config"
 	"catalog/internal/db"
 	pb "catalog/internal/grpc/catalog/v1"
 	"catalog/internal/interceptors"
 	"catalog/internal/services"
-	"context"
-	"fmt"
-	"log"
-	"log/slog"
-	"net"
-	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
@@ -19,37 +18,45 @@ import (
 )
 
 func RunServer() {
-    config := config.NewConfig()
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
+	slog.SetDefault(logger)
 
-    logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
-    slog.SetDefault(logger)
-
-    dbpool, err := pgxpool.New(context.Background(), config.DB.DATABASE_URL)
+	config, err := config.NewConfig()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	dbpool, err := pgxpool.New(context.Background(), config.DB.DSN())
+	if err != nil {
+		logger.Error("Unable to create connection pool", "error", err)
 		os.Exit(1)
 	}
 	defer dbpool.Close()
 
-    queries := db.New(dbpool)
+	queries := db.New(dbpool)
 
-    port := 50051
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+	lis, err := net.Listen("tcp", config.App.Address())
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.Error("failed to start new.Listen")
+		os.Exit(1)
 	}
+
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(interceptors.LoggingInterceptor(logger)),
 	}
+	grpcServer := grpc.NewServer(opts...)
 
-    grpcServer := grpc.NewServer(opts...)
-    productService := services.NewProductService(queries)
-    catategoryService := services.NewCategoryService(queries)
-    pb.RegisterCatalogServiceServer(grpcServer, NewServer(dbpool, productService, catategoryService))
+	productService := services.NewProductService(queries)
+	catategoryService := services.NewCategoryService(queries)
+
+	pb.RegisterCatalogServiceServer(grpcServer, NewServer(dbpool, productService, catategoryService))
 	reflection.Register(grpcServer)
+
 	logger.Info("Run server")
 	err = grpcServer.Serve(lis)
-    if err != nil {
-        panic("error to run server")
-    }
+	if err != nil {
+		logger.Error("failed to run grpc server")
+		os.Exit(1)
+	}
 }

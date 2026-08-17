@@ -4,6 +4,8 @@ go 1.26.5
 
 require github.com/joho/godotenv v1.5.1
 
+require github.com/caarlos0/env/v11 v11.4.1 // indirect
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1

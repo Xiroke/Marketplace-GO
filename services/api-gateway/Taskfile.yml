@@ -51,7 +51,7 @@ tasks:
   swagger-gen:
     desc: Generate Swagger docs
     cmds:
-      - swag init -g ./main.go --output ./internal/swagger --dir ./cmd/api-gateway
+      - swag init -g ./main.go --output ./internal/swagger --dir ./cmd/api-gateway,./internal/api --parseInternal --parseDependency
 
   test:
     cmds:

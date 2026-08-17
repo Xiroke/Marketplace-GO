@@ -35,7 +35,7 @@ func seedUser(userRepo UserRepository) (*db.User, error) {
 	return &user, nil
 }
 
-func seedTokens(ctx context.Context, refreshTokenRepo RefreshTokenRepository, JWT_SECRET []byte, user_id pgtype.UUID) (string, string, error) {
+func seedTokens(ctx context.Context, refreshTokenRepo RefreshTokenRepository, JWTSecret []byte, user_id pgtype.UUID) (string, string, error) {
 	refreshToken, err := token.GenerateRefreshToken(32)
 	if err != nil {
 		return "", "", errors.New("failed to seed refresh token")
@@ -57,7 +57,7 @@ func seedTokens(ctx context.Context, refreshTokenRepo RefreshTokenRepository, JW
 		return "", "", errors.New("failed to create refresh token, try again")
 	}
 
-	accessToken, err := token.GenerateAccessToken(JWT_SECRET, user_id.String())
+	accessToken, err := token.GenerateAccessToken(JWTSecret, user_id.String())
 	if err != nil {
 		return "", "", errors.New("failed to generate access token, try again")
 	}

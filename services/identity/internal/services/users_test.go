@@ -22,7 +22,7 @@ import (
 
 func TestUserService_Login_Success(t *testing.T) {
 	cfg := &config.Config{
-		JWT_SECRET: []byte("secret"),
+		JWTSecret: []byte("secret"),
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
@@ -81,7 +81,7 @@ func TestUserService_Login_Success(t *testing.T) {
 
 func TestUserService_Register_Success(t *testing.T) {
 	cfg := &config.Config{
-		JWT_SECRET: []byte("secret"),
+		JWTSecret: []byte("secret"),
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
@@ -141,7 +141,7 @@ func TestUserService_Register_Success(t *testing.T) {
 
 func TestUserService_Logout_Success(t *testing.T) {
 	cfg := &config.Config{
-		JWT_SECRET: []byte("secret"),
+		JWTSecret: []byte("secret"),
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
@@ -191,7 +191,7 @@ func TestUserService_Logout_Success(t *testing.T) {
 
 func TestUserService_RefreshAccessToken_Success(t *testing.T) {
 	cfg := &config.Config{
-		JWT_SECRET: []byte("secret"),
+		JWTSecret: []byte("secret"),
 	}
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,

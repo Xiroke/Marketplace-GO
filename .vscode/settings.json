@@ -1,20 +1,19 @@
 {
   "go.lintTool": "golangci-lint",
-  "go.lintFlags": [
-    "--path-mode=abs",
-    "--fast-only"
-  ],
+  "go.lintFlags": [],
+
   "go.formatTool": "goimports",
-  "go.alternateTools": {
-    "customFormatter": "golangci-lint"
-  },
   "go.formatFlags": [
-    "fmt",
-    "--stdin",
     "-local",
     "identity/,catalog/,apigateway/"
   ],
-  "editor.formatOnSave": true,
+
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
 
   "tooltitude.pb.importsCheckEnabled": false,
   "tooltitude.pb.refsCheckEnabled": false
