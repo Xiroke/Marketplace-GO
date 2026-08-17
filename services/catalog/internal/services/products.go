@@ -1,13 +1,17 @@
 package services
 
 import (
+	"context"
+	"errors"
+
 	"catalog/internal/db"
 	"catalog/internal/errs"
 	pb "catalog/internal/grpc/catalog/v1"
 	"catalog/internal/utils"
-	"context"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"google.golang.org/grpc/codes"
 )
 
 //mockery:generate: true
@@ -19,7 +23,7 @@ type ProductRepository interface {
 }
 
 type ProductService struct {
-	repo   ProductRepository
+	repo ProductRepository
 }
 
 func NewProductService(repo ProductRepository) *ProductService {
@@ -27,147 +31,158 @@ func NewProductService(repo ProductRepository) *ProductService {
 }
 
 func (s *ProductService) CreateProduct(ctx context.Context, req *pb.CreateProductRequest) (*pb.CreateProductResponse, error) {
-    price, appErr := utils.StringToNumeric(req.Price)
-    if appErr != nil {
-        return nil, appErr
-    }
+	price, appErr := utils.StringToNumeric(req.Price)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-    creatorID, appErr := utils.StringToUUID(req.CreatorId)
-    if appErr != nil {
-        return nil, appErr
-    }
+	creatorID, appErr := utils.StringToUUID(req.CreatorId)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-    product, err := s.repo.CreateProduct(ctx, db.CreateProductParams{
-        Name: req.Name,
-        Description: req.Description,
-        Price: price,
-        Attributes: []byte(req.Attributes),
-        CreatorID: creatorID,
-        CategoryID: req.CategoryId,
-    })
-    if err != nil {
-        return nil, errs.Internal("failed to create product", err)
-    }
+	product, err := s.repo.CreateProduct(ctx, db.CreateProductParams{
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       price,
+		Attributes:  []byte(req.Attributes),
+		CreatorID:   creatorID,
+		CategoryID:  req.CategoryId,
+	})
+	if err != nil {
+		return nil, errs.Internal("failed to create product", err)
+	}
 
-    priceStr, appErr := utils.NumericToString(product.Price)
-    if appErr != nil {
-        return nil, appErr
-    }
+	priceStr, appErr := utils.NumericToString(product.Price)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-    return &pb.CreateProductResponse{
-        Product: &pb.Product{
-            Name: product.Name,
-            Description: product.Description,
-            Price: priceStr,
-            Attributes: string(product.Attributes),
-            CreatorId: product.CreatorID.String(),
-            CategoryId: product.CategoryID,
-            Id: product.ID.String(),
-            Status: string(product.Status),
-            UpdatedAt: utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
-            CreatedAt: utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
-        },
-    }, nil
+	return &pb.CreateProductResponse{
+		Product: &pb.Product{
+			Name:        product.Name,
+			Description: product.Description,
+			Price:       priceStr,
+			Attributes:  string(product.Attributes),
+			CreatorId:   product.CreatorID.String(),
+			CategoryId:  product.CategoryID,
+			Id:          product.ID.String(),
+			Status:      string(product.Status),
+			UpdatedAt:   utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
+			CreatedAt:   utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
+		},
+	}, nil
 }
 
 func (s *ProductService) GetProduct(ctx context.Context, req *pb.GetProductRequest) (*pb.GetProductResponse, error) {
-    productUUID, appErr := utils.StringToUUID(req.Id)
-    if appErr != nil {
-        return nil, appErr
-    }
+	productUUID, appErr := utils.StringToUUID(req.Id)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-    product, err := s.repo.GetProduct(ctx, productUUID)
-    if err != nil {
-        return nil, errs.Internal("failed to get product", err)
-    }
+	product, err := s.repo.GetProduct(ctx, productUUID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &errs.AppError{Code: codes.NotFound}
+		}
 
-    priceStr, appErr := utils.NumericToString(product.Price)
-    if appErr != nil {
-        return nil, appErr
-    }
+		return nil, errs.Internal("failed to get product", err)
+	}
 
-    return &pb.GetProductResponse{
-        Product: &pb.Product{
-            Name: product.Name,
-            Description: product.Description,
-            Price: priceStr,
-            Attributes: string(product.Attributes),
-            CreatorId: product.CreatorID.String(),
-            CategoryId: product.CategoryID,
-            Id: product.ID.String(),
-            Status: string(product.Status),
-            UpdatedAt: utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
-            CreatedAt: utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
-        },
-    }, nil;
+	priceStr, appErr := utils.NumericToString(product.Price)
+	if appErr != nil {
+		return nil, appErr
+	}
+
+	return &pb.GetProductResponse{
+		Product: &pb.Product{
+			Name:        product.Name,
+			Description: product.Description,
+			Price:       priceStr,
+			Attributes:  string(product.Attributes),
+			CreatorId:   product.CreatorID.String(),
+			CategoryId:  product.CategoryID,
+			Id:          product.ID.String(),
+			Status:      string(product.Status),
+			UpdatedAt:   utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
+			CreatedAt:   utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
+		},
+	}, nil
 }
 
 func (s *ProductService) GetProductsByCategory(ctx context.Context, req *pb.GetProductsByCategoryRequest) (*pb.GetProductsByCategoryResponse, error) {
-    products, err := s.repo.GetProductsByCategory(ctx, req.CategoryId)
-    if err != nil {
-        return nil, errs.Internal("failed to get products by category", err)
-    }
+	products, err := s.repo.GetProductsByCategory(ctx, req.CategoryId)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &errs.AppError{Code: codes.NotFound}
+		}
 
-    var productsResponse []*pb.Product = make([]*pb.Product, 0, len(products))
-    for _, product := range products {
-        priceStr, appErr := utils.NumericToString(product.Price)
-        if appErr != nil {
-            return nil, appErr
-        }
+		return nil, errs.Internal("failed to get products by category", err)
+	}
 
-        productsResponse = append(productsResponse, &pb.Product{
-            Name: product.Name,
-            Description: product.Description,
-            Price: priceStr,
-            Attributes: string(product.Attributes),
-            CreatorId: product.CreatorID.String(),
-            CategoryId: product.CategoryID,
-            Id: product.ID.String(),
-            Status: string(product.Status),
-            UpdatedAt: utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
-            CreatedAt: utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
-        })
-    }
+	var productsResponse []*pb.Product = make([]*pb.Product, 0, len(products))
+	for _, product := range products {
+		priceStr, appErr := utils.NumericToString(product.Price)
+		if appErr != nil {
+			return nil, appErr
+		}
 
-    return &pb.GetProductsByCategoryResponse{
-        Products: productsResponse,
-    }, nil
+		productsResponse = append(productsResponse, &pb.Product{
+			Name:        product.Name,
+			Description: product.Description,
+			Price:       priceStr,
+			Attributes:  string(product.Attributes),
+			CreatorId:   product.CreatorID.String(),
+			CategoryId:  product.CategoryID,
+			Id:          product.ID.String(),
+			Status:      string(product.Status),
+			UpdatedAt:   utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
+			CreatedAt:   utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
+		})
+	}
+
+	return &pb.GetProductsByCategoryResponse{
+		Products: productsResponse,
+	}, nil
 }
 
 func (s *ProductService) GetProductsByCreator(ctx context.Context, req *pb.GetProductsByCreatorRequest) (*pb.GetProductsByCreatorResponse, error) {
-    creatorUUID, appErr := utils.StringToUUID(req.CreatorId)
-    if appErr != nil {
-        return nil, appErr
-    }
+	creatorUUID, appErr := utils.StringToUUID(req.CreatorId)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-    products, err := s.repo.GetProductsByCreator(ctx, creatorUUID)
-    if err != nil {
-        return nil, errs.Internal("failed to get products by category", err)
-    }
+	products, err := s.repo.GetProductsByCreator(ctx, creatorUUID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &errs.AppError{Code: codes.NotFound, Msg: "products are not found"}
+		}
 
+		return nil, errs.Internal("failed to get products by category", err)
+	}
 
-    var productsResponse []*pb.Product = make([]*pb.Product, 0, len(products))
-    for _, product := range products {
-        priceStr, appErr := utils.NumericToString(product.Price)
-        if appErr != nil {
-            return nil, appErr
-        }
+	var productsResponse []*pb.Product = make([]*pb.Product, 0, len(products))
+	for _, product := range products {
+		priceStr, appErr := utils.NumericToString(product.Price)
+		if appErr != nil {
+			return nil, appErr
+		}
 
-        productsResponse = append(productsResponse, &pb.Product{
-            Name: product.Name,
-            Description: product.Description,
-            Price: priceStr,
-            Attributes: string(product.Attributes),
-            CreatorId: product.CreatorID.String(),
-            CategoryId: product.CategoryID,
-            Id: product.ID.String(),
-            Status: string(product.Status),
-            UpdatedAt: utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
-            CreatedAt: utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
-        })
-    }
+		productsResponse = append(productsResponse, &pb.Product{
+			Name:        product.Name,
+			Description: product.Description,
+			Price:       priceStr,
+			Attributes:  string(product.Attributes),
+			CreatorId:   product.CreatorID.String(),
+			CategoryId:  product.CategoryID,
+			Id:          product.ID.String(),
+			Status:      string(product.Status),
+			UpdatedAt:   utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
+			CreatedAt:   utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
+		})
+	}
 
-    return &pb.GetProductsByCreatorResponse{
-        Products: productsResponse,
-    }, nil
+	return &pb.GetProductsByCreatorResponse{
+		Products: productsResponse,
+	}, nil
 }

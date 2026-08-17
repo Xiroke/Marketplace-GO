@@ -41,7 +41,7 @@ func RunServer() {
 
 	lis, err := net.Listen("tcp", config.App.Address())
 	if err != nil {
-		logger.Error("failed to start new.Listen")
+		logger.Error("failed to start net.Listen")
 		os.Exit(1)
 	}
 

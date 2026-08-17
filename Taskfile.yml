@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+output: prefixed
+
+includes:
+  identity:
+    taskfile: ./services/identity/Taskfile.yml
+    dir: ./services/identity
+
+  catalog:
+    taskfile: ./services/catalog/Taskfile.yml
+    dir: ./services/catalog
+
+  api-gateway:
+    taskfile: ./services/api-gateway/Taskfile.yml
+    dir: ./services/api-gateway
+
+tasks:
+  default:
+    cmds:
+      - task --list-all
+
+  run-all-dev:
+    desc: "run all dev microservices"
+    deps:
+      - identity:run
+      - catalog:run
+      - api-gateway:run

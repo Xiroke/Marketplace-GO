@@ -39,9 +39,19 @@ message RefreshAccessTokenResponse {
   string access_token = 1;
 }
 
+message GetUserByAccessRequest {
+  string access_token = 1;
+}
+
+message GetUserByAccessResponse {
+  string user_id = 1;
+}
+
+
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc Logout(LogoutRequest) returns (google.protobuf.Empty);
   rpc RefreshAccessToken(RefreshAccessTokenRequest) returns (RefreshAccessTokenResponse);
+  rpc GetUserByAccess(GetUserByAccessRequest) returns (GetUserByAccessResponse);
 }

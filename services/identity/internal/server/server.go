@@ -7,14 +7,17 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 
 	"identity/internal/config"
@@ -37,6 +40,11 @@ func newServer(db *pgxpool.Pool, authService *services.UserService) *server {
 }
 
 func (s *server) Login(ctx context.Context, request *pb.LoginRequest) (*pb.LoginResponse, error) {
+	if strings.TrimSpace(request.Email) == "" ||
+		request.Password == "" {
+		return nil, status.Error(codes.InvalidArgument, "email and password must not be empty")
+	}
+
 	return s.authService.Login(ctx, request)
 }
 
@@ -45,6 +53,11 @@ func (s *server) Logout(ctx context.Context, request *pb.LogoutRequest) (*emptyp
 }
 
 func (s *server) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	if strings.TrimSpace(request.Username) == "" ||
+		strings.TrimSpace(request.Email) == "" ||
+		request.Password == "" {
+		return nil, status.Error(codes.InvalidArgument, "username, email and password must not be empty")
+	}
 	return s.authService.Register(ctx, request)
 }
 
@@ -52,11 +65,16 @@ func (s *server) RefreshAccessToken(ctx context.Context, request *pb.RefreshAcce
 	return s.authService.RefreshAccessToken(ctx, request)
 }
 
+func (s *server) GetUserByAccess(ctx context.Context, request *pb.GetUserByAccessRequest) (*pb.GetUserByAccessResponse, error) {
+	return s.authService.GetUserByAccess(ctx, request)
+}
+
 var methodsWithAuth = map[string]bool{
 	"/identity.v1.AuthService/Login":              false,
 	"/identity.v1.AuthService/Register":           false,
 	"/identity.v1.AuthService/RefreshAccessToken": false,
 	"/identity.v1.AuthService/Logout":             true,
+	"/identity.v1.AuthService/GetUserByAccess":    true,
 }
 
 func StartServer() {
@@ -84,6 +102,7 @@ func StartServer() {
 		os.Exit(1)
 	}
 	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(interceptors.LoggingInterceptor(logger)),
 		grpc.UnaryInterceptor(interceptors.GetAuthUnaryInterceptor(methodsWithAuth, config, queries)),
 	}
 

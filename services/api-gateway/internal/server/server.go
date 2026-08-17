@@ -35,10 +35,16 @@ func RunServer() {
 
 	identityClient := identityv1.NewAuthServiceClient(connAuthClient)
 
+	logger.Info("Create api-gateway server")
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	RegisterRoutes(ctx, r, config, identityClient)
 
+	logger.Info("Run api-gateway server")
 	Address := fmt.Sprintf(":%s", config.Port)
-	http.ListenAndServe(Address, r)
+	err = http.ListenAndServe(Address, r)
+	if err != nil {
+		logger.Error("failed to run api-gateway server", "error", err)
+		os.Exit(1)
+	}
 }

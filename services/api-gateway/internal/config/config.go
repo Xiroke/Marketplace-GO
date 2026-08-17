@@ -27,11 +27,9 @@ func (p *PostgresConfig) DSN() string {
 }
 
 type Config struct {
-	Port                   string `env:"PORT" envDefault:"8080"`
+	Port                   string `env:"PORT,required" envDefault:"8080"`
 	AddressIdentityService string `env:"ADDRESS_IDENTITY_SERVICE,required"`
 	AddressCatalogService  string `env:"ADDRESS_CATALOG_SERVICE,required"`
-
-	DB PostgresConfig
 }
 
 func NewConfig() (*Config, error) {

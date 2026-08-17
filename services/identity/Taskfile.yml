@@ -7,6 +7,11 @@ tasks:
     cmds:
       - go run ./cmd/identity/main.go
 
+  run-dev:
+    cmds:
+      - docker compose -f ./docker-compose.dev.yaml up -d
+      - task: run
+
   build:
     cmds:
       - go build -o bin/ ./cmd/identity/main.go

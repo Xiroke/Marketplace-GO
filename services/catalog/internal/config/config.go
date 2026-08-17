@@ -27,8 +27,8 @@ func (p *PostgresConfig) DSN() string {
 }
 
 type AppConfig struct {
-	Host string `env:"HOST"`
-	Port string `env:"PORT" envDefault:"8080"`
+	Host string `env:"HOST,required"`
+	Port string `env:"PORT,required" envDefault:"8080"`
 }
 
 func (c *AppConfig) Address() string {

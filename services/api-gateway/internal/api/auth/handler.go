@@ -52,10 +52,11 @@ func LoginHandler(identityClient identityv1.AuthServiceClient) http.HandlerFunc 
 			return
 		}
 
-		res, err := identityClient.Login(ctx, &identityv1.LoginRequest{
+		data, err := identityClient.Login(ctx, &identityv1.LoginRequest{
 			Email:    req.Email,
 			Password: req.Password,
 		})
+
 		if err != nil {
 			respondWithError(w, "Failed to login", http.StatusInternalServerError)
 			return
@@ -64,7 +65,13 @@ func LoginHandler(identityClient identityv1.AuthServiceClient) http.HandlerFunc 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 
-		if err := json.NewEncoder(w).Encode(res); err != nil {
+		response := LoginResponse{
+			AccessToken:  data.AccessToken,
+			RefreshToken: data.RefreshToken,
+			UserId:       data.UserId,
+		}
+
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		}
 	}
