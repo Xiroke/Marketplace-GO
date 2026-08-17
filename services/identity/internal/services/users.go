@@ -13,7 +13,6 @@ import (
 	pb "identity/internal/grpc/identity/v1"
 	"identity/internal/interceptors"
 	"identity/internal/token"
-	"identity/internal/utils"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -56,10 +55,6 @@ func NewUserService(logger *slog.Logger, userRepo UserRepository, refreshTokenRe
 }
 
 func (u *UserService) Login(ctx context.Context, request *pb.LoginRequest) (*pb.LoginResponse, error) {
-	if err := utils.CloseCanceledRequestByContext(ctx); err != nil {
-		return nil, err
-	}
-
 	if strings.TrimSpace(request.Email) == "" ||
 		request.Password == "" {
 		return nil, status.Error(codes.InvalidArgument, "email and password must not be empty")
@@ -101,10 +96,6 @@ func (u *UserService) Login(ctx context.Context, request *pb.LoginRequest) (*pb.
 }
 
 func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*emptypb.Empty, error) {
-	if err := utils.CloseCanceledRequestByContext(ctx); err != nil {
-		return nil, err
-	}
-
 	userClaims, ok := ctx.Value(interceptors.UserKey).(token.UserClaims)
 	if !ok {
 		return nil, status.Error(codes.Unauthenticated, "unauthenticated")
@@ -142,10 +133,6 @@ func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*e
 }
 
 func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	if err := utils.CloseCanceledRequestByContext(ctx); err != nil {
-		return nil, err
-	}
-
 	if strings.TrimSpace(request.Username) == "" ||
 		strings.TrimSpace(request.Email) == "" ||
 		request.Password == "" {
@@ -210,16 +197,12 @@ func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest)
 }
 
 func (u *UserService) RefreshAccessToken(ctx context.Context, request *pb.RefreshAccessTokenRequest) (*pb.RefreshAccessTokenResponse, error) {
-	if err := utils.CloseCanceledRequestByContext(ctx); err != nil {
-		return nil, err
-	}
-
 	user, err := u.refreshTokenRepo.GetUserByRefreshToken(ctx, request.RefreshToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid refresh token")
 	}
 
-	accessToken, err := token.GenerateAccessToken(u.config.JWTSecret, user.ID.String())
+	accessToken, err := token.GenerateAccessToken([]byte(u.config.JWTSecret), user.ID.String())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to generate access token, try again")
 	}
@@ -280,7 +263,7 @@ func (u *UserService) createUserTokens(ctx context.Context, user_id pgtype.UUID,
 		return "", "", status.Errorf(codes.Internal, "failed to create refresh token, try again")
 	}
 
-	accessToken, err := token.GenerateAccessToken(u.config.JWTSecret, user_id.String())
+	accessToken, err := token.GenerateAccessToken([]byte(u.config.JWTSecret), user_id.String())
 	if err != nil {
 		return "", "", status.Errorf(codes.Internal, "failed to generate access token, try again")
 	}

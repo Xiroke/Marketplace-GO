@@ -9,14 +9,14 @@ import (
 )
 
 type LoginRequest struct {
-	Email string `json:"email" binding:"required" example:"user@example.com"`
+	Email    string `json:"email" binding:"required" example:"user@example.com"`
 	Password string `json:"password" binding:"required" example:"secret123"`
 }
 
 type LoginResponse struct {
-	AccessToken   string `json:"access_token" binding:"required" example:"string"`
-	RefreshToken  string `json:"refresh_token" binding:"required" example:"string"`
-	UserId        string `json:"user_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
+	AccessToken  string `json:"access_token" binding:"required" example:"string"`
+	RefreshToken string `json:"refresh_token" binding:"required" example:"string"`
+	UserId       string `json:"user_id" binding:"required" example:"123e4567-e89b-12d3-a456-426614174000"`
 }
 
 type ErrorResponse struct {
@@ -38,7 +38,7 @@ func respondWithError(w http.ResponseWriter, message string, code int) {
 // @Success      200  {object}  LoginResponse
 // @Failure      500  {object}  ErrorResponse
 // @Router       /auth/login [post]
-func LoginHandler(identityClient identityv1.AuthServiceClient) http.HandlerFunc{
+func LoginHandler(identityClient identityv1.AuthServiceClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -61,8 +61,8 @@ func LoginHandler(identityClient identityv1.AuthServiceClient) http.HandlerFunc{
 			return
 		}
 
-        w.Header().Set("Content-Type", "application/json")
-        w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)

@@ -5,6 +5,9 @@ import (
 	"log/slog"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"catalog/internal/config"
 	"catalog/internal/db"
@@ -42,21 +45,52 @@ func RunServer() {
 		os.Exit(1)
 	}
 
+	logger.Info("Create server")
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(interceptors.LoggingInterceptor(logger)),
 	}
 	grpcServer := grpc.NewServer(opts...)
 
 	productService := services.NewProductService(queries)
-	catategoryService := services.NewCategoryService(queries)
+	categoryService := services.NewCategoryService(queries)
 
-	pb.RegisterCatalogServiceServer(grpcServer, NewServer(dbpool, productService, catategoryService))
+	pb.RegisterCatalogServiceServer(grpcServer, NewServer(dbpool, productService, categoryService))
 	reflection.Register(grpcServer)
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	shutdownComplete := make(chan struct{})
+
+	go func() {
+		<-ctx.Done()
+		logger.Info("Get stop signal")
+
+		stopped := make(chan struct{})
+		go func() {
+			grpcServer.GracefulStop()
+			close(stopped)
+		}()
+
+		select {
+		case <-time.After(10 * time.Second):
+			logger.Info("Timeout GracefulStop, immediately stopping...")
+			grpcServer.Stop()
+		case <-stopped:
+			logger.Info("Successfully stopping server")
+		}
+
+		close(shutdownComplete)
+	}()
+
 	logger.Info("Run server")
+
 	err = grpcServer.Serve(lis)
 	if err != nil {
 		logger.Error("failed to run grpc server")
 		os.Exit(1)
 	}
+
+	<-shutdownComplete
+	logger.Info("Server process exited cleanly")
 }

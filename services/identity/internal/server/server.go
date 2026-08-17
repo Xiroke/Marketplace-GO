@@ -6,6 +6,9 @@ import (
 	"log/slog"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
@@ -57,9 +60,7 @@ var methodsWithAuth = map[string]bool{
 }
 
 func StartServer() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource: true,
-	}))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
 	slog.SetDefault(logger)
 
 	config, err := config.NewConfig()
@@ -96,9 +97,41 @@ func StartServer() {
 	authService := services.NewUserService(logger, queries, queries, config)
 	pb.RegisterAuthServiceServer(grpcServer, newServer(dbpool, authService))
 	reflection.Register(grpcServer)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	shutdownComplete := make(chan struct{})
+
+	go func() {
+		<-ctx.Done()
+		logger.Info("Get stop signal")
+
+		stopped := make(chan struct{})
+		go func() {
+			grpcServer.GracefulStop()
+			close(stopped)
+		}()
+
+		select {
+		case <-time.After(10 * time.Second):
+			logger.Info("Timeout GracefulStop, immediately stopping...")
+			grpcServer.Stop()
+		case <-stopped:
+			logger.Info("Successfully stopping server")
+		}
+
+		close(shutdownComplete)
+	}()
+
 	logger.Info("Run server")
+
 	err = grpcServer.Serve(lis)
 	if err != nil {
-		panic("error to start grpc server")
+		logger.Error("failed to run grpc server")
+		os.Exit(1)
 	}
+
+	<-shutdownComplete
+	logger.Info("Server process exited cleanly")
 }

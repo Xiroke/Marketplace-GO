@@ -36,7 +36,7 @@ func (c *AppConfig) Address() string {
 }
 
 type Config struct {
-	JWTSecret []byte `env:"JWTSecret,required"`
+	JWTSecret string `env:"JWT_SECRET,required"`
 
 	App AppConfig
 	DB  PostgresConfig
