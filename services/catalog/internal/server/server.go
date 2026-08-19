@@ -20,6 +20,11 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+var methodsWithAuth = map[string]bool{
+	"/catalog.v1.CatalogService/CreateCategory": true,
+	"/catalog.v1.CatalogService/GetCategories":  false,
+}
+
 func RunServer() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
 	slog.SetDefault(logger)
@@ -47,7 +52,10 @@ func RunServer() {
 
 	logger.Info("Create server")
 	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(interceptors.LoggingInterceptor(logger)),
+		grpc.ChainUnaryInterceptor(
+			interceptors.GetLoggingInterceptor(logger),
+			interceptors.GetAuthUnaryInterceptor(methodsWithAuth),
+		),
 	}
 	grpcServer := grpc.NewServer(opts...)
 

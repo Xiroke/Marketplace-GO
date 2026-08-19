@@ -105,6 +105,68 @@ func (_c *MockCategoryRepository_CreateCategory_Call) RunAndReturn(run func(ctx 
 	return _c
 }
 
+// GetCategories provides a mock function for the type MockCategoryRepository
+func (_mock *MockCategoryRepository) GetCategories(ctx context.Context) ([]db.Category, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCategories")
+	}
+
+	var r0 []db.Category
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]db.Category, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []db.Category); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]db.Category)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCategoryRepository_GetCategories_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCategories'
+type MockCategoryRepository_GetCategories_Call struct {
+	*mock.Call
+}
+
+// GetCategories is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockCategoryRepository_Expecter) GetCategories(ctx any) *MockCategoryRepository_GetCategories_Call {
+	return &MockCategoryRepository_GetCategories_Call{Call: _e.mock.On("GetCategories", ctx)}
+}
+
+func (_c *MockCategoryRepository_GetCategories_Call) Run(run func(ctx context.Context)) *MockCategoryRepository_GetCategories_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCategoryRepository_GetCategories_Call) Return(categorys []db.Category, err error) *MockCategoryRepository_GetCategories_Call {
+	_c.Call.Return(categorys, err)
+	return _c
+}
+
+func (_c *MockCategoryRepository_GetCategories_Call) RunAndReturn(run func(ctx context.Context) ([]db.Category, error)) *MockCategoryRepository_GetCategories_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockProductRepository creates a new instance of MockProductRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockProductRepository(t interface {

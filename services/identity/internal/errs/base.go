@@ -1,6 +1,7 @@
 package errs
 
 import (
+	"errors"
 	"fmt"
 
 	"google.golang.org/grpc/codes"
@@ -32,6 +33,10 @@ func InvalidArgument(msg string, err error) *AppError {
 	return &AppError{Code: codes.InvalidArgument, Msg: msg, Err: err}
 }
 
-func Internal(msg string, err error) *AppError {
-	return &AppError{Code: codes.Internal, Msg: msg, Err: err}
+func Internal(err error) *AppError {
+	return &AppError{Code: codes.Internal, Msg: "Internal error", Err: err}
+}
+
+func Unauthenticated() *AppError {
+	return &AppError{Code: codes.Unauthenticated, Msg: "Unauthenticated", Err: errors.New("Unauthenticated")}
 }

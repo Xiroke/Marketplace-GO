@@ -22,9 +22,16 @@ tasks:
     cmds:
       - task --list-all
 
-  run-all-dev:
+  run-dev-all:
     desc: "run all dev microservices"
     deps:
-      - identity:run
-      - catalog:run
-      - api-gateway:run
+      - identity:run-dev
+      - catalog:run-dev
+      - api-gateway:run-dev
+
+  grpc-gen-all:
+    desc: "generace grpc code for all microservices"
+    deps:
+      - identity:grpc-gen
+      - catalog:grpc-gen
+      - api-gateway:grpc-gen

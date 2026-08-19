@@ -13,6 +13,7 @@ import (
 type Querier interface {
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
+	GetCategories(ctx context.Context) ([]Category, error)
 	GetProduct(ctx context.Context, id pgtype.UUID) (Product, error)
 	GetProductsByCategory(ctx context.Context, categoryID int32) ([]Product, error)
 	GetProductsByCreator(ctx context.Context, creatorID pgtype.UUID) ([]Product, error)

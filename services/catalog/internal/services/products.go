@@ -3,10 +3,12 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"catalog/internal/db"
 	"catalog/internal/errs"
 	pb "catalog/internal/grpc/catalog/v1"
+	"catalog/internal/types"
 	"catalog/internal/utils"
 
 	"github.com/jackc/pgx/v5"
@@ -31,12 +33,12 @@ func NewProductService(repo ProductRepository) *ProductService {
 }
 
 func (s *ProductService) CreateProduct(ctx context.Context, req *pb.CreateProductRequest) (*pb.CreateProductResponse, error) {
-	price, appErr := utils.StringToNumeric(req.Price)
-	if appErr != nil {
-		return nil, appErr
+	userID, ok := ctx.Value(types.UserIDKey).(*pgtype.UUID)
+	if !ok {
+		return nil, errs.Unauthenticated()
 	}
 
-	creatorID, appErr := utils.StringToUUID(req.CreatorId)
+	price, appErr := utils.StringToNumeric(req.Price)
 	if appErr != nil {
 		return nil, appErr
 	}
@@ -46,11 +48,11 @@ func (s *ProductService) CreateProduct(ctx context.Context, req *pb.CreateProduc
 		Description: req.Description,
 		Price:       price,
 		Attributes:  []byte(req.Attributes),
-		CreatorID:   creatorID,
+		CreatorID:   *userID,
 		CategoryID:  req.CategoryId,
 	})
 	if err != nil {
-		return nil, errs.Internal("failed to create product", err)
+		return nil, errs.Internal(fmt.Errorf("failed to create product: %w", err))
 	}
 
 	priceStr, appErr := utils.NumericToString(product.Price)
@@ -67,7 +69,7 @@ func (s *ProductService) CreateProduct(ctx context.Context, req *pb.CreateProduc
 			CreatorId:   product.CreatorID.String(),
 			CategoryId:  product.CategoryID,
 			Id:          product.ID.String(),
-			Status:      string(product.Status),
+			Status:      utils.ProductStatusFromDBToGRPC(product.Status),
 			UpdatedAt:   utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
 			CreatedAt:   utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
 		},
@@ -86,7 +88,7 @@ func (s *ProductService) GetProduct(ctx context.Context, req *pb.GetProductReque
 			return nil, &errs.AppError{Code: codes.NotFound}
 		}
 
-		return nil, errs.Internal("failed to get product", err)
+		return nil, errs.Internal(fmt.Errorf("failed to get product: %w", err))
 	}
 
 	priceStr, appErr := utils.NumericToString(product.Price)
@@ -103,7 +105,7 @@ func (s *ProductService) GetProduct(ctx context.Context, req *pb.GetProductReque
 			CreatorId:   product.CreatorID.String(),
 			CategoryId:  product.CategoryID,
 			Id:          product.ID.String(),
-			Status:      string(product.Status),
+			Status:      utils.ProductStatusFromDBToGRPC(product.Status),
 			UpdatedAt:   utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
 			CreatedAt:   utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
 		},
@@ -117,7 +119,7 @@ func (s *ProductService) GetProductsByCategory(ctx context.Context, req *pb.GetP
 			return nil, &errs.AppError{Code: codes.NotFound}
 		}
 
-		return nil, errs.Internal("failed to get products by category", err)
+		return nil, errs.Internal(fmt.Errorf("failed to get products by category: %w", err))
 	}
 
 	var productsResponse []*pb.Product = make([]*pb.Product, 0, len(products))
@@ -135,7 +137,7 @@ func (s *ProductService) GetProductsByCategory(ctx context.Context, req *pb.GetP
 			CreatorId:   product.CreatorID.String(),
 			CategoryId:  product.CategoryID,
 			Id:          product.ID.String(),
-			Status:      string(product.Status),
+			Status:      utils.ProductStatusFromDBToGRPC(product.Status),
 			UpdatedAt:   utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
 			CreatedAt:   utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
 		})
@@ -158,7 +160,7 @@ func (s *ProductService) GetProductsByCreator(ctx context.Context, req *pb.GetPr
 			return nil, &errs.AppError{Code: codes.NotFound, Msg: "products are not found"}
 		}
 
-		return nil, errs.Internal("failed to get products by category", err)
+		return nil, errs.Internal(fmt.Errorf("failed to get products by category: %w", err))
 	}
 
 	var productsResponse []*pb.Product = make([]*pb.Product, 0, len(products))
@@ -176,7 +178,7 @@ func (s *ProductService) GetProductsByCreator(ctx context.Context, req *pb.GetPr
 			CreatorId:   product.CreatorID.String(),
 			CategoryId:  product.CategoryID,
 			Id:          product.ID.String(),
-			Status:      string(product.Status),
+			Status:      utils.ProductStatusFromDBToGRPC(product.Status),
 			UpdatedAt:   utils.TimestamptzToGRPCTimestamp(product.UpdatedAt),
 			CreatedAt:   utils.TimestamptzToGRPCTimestamp(product.CreatedAt),
 		})

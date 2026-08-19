@@ -12,8 +12,8 @@ import (
 	"identity/internal/db"
 	"identity/internal/errs"
 	pb "identity/internal/grpc/identity/v1"
-	"identity/internal/interceptors"
 	"identity/internal/token"
+	"identity/internal/types"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -61,7 +61,7 @@ func (u *UserService) Login(ctx context.Context, request *pb.LoginRequest) (*pb.
 			return nil, &errs.AppError{Code: codes.Unauthenticated, Msg: "invalid credentials"}
 		}
 
-		return nil, errs.Internal("failed to get user for login", err)
+		return nil, errs.Internal(fmt.Errorf("failed to get user for login: %w", err))
 	}
 
 	if !u.checkUserPassword(user.Password, request.Password) {
@@ -85,15 +85,15 @@ func (u *UserService) Login(ctx context.Context, request *pb.LoginRequest) (*pb.
 }
 
 func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*emptypb.Empty, error) {
-	userClaims, ok := ctx.Value(interceptors.UserKey).(token.UserClaims)
+	userID, ok := ctx.Value(types.UserIDKey).(*pgtype.UUID)
 	if !ok {
-		return nil, &errs.AppError{Code: codes.Unauthenticated, Msg: "unauthenticated"}
+		return nil, errs.Internal(errors.New("failed to get user from ctx"))
 	}
 
 	var userUUID pgtype.UUID
-	err := userUUID.Scan(userClaims.UserID)
+	err := userUUID.Scan(userID)
 	if err != nil {
-		return nil, errs.Internal("invalid user ID format", err)
+		return nil, errs.Internal(fmt.Errorf("invalid user ID format: %w", err))
 	}
 
 	ok, err = u.refreshTokenRepo.ExistRefreshTokenByUser(ctx, db.ExistRefreshTokenByUserParams{
@@ -101,7 +101,7 @@ func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*e
 		Token:  request.RefreshToken,
 	})
 	if err != nil {
-		return nil, errs.Internal("failed to check user refresh token", err)
+		return nil, errs.Internal(fmt.Errorf("failed to check user refresh token: %w", err))
 	}
 	if !ok {
 		return nil, &errs.AppError{Code: codes.Unauthenticated, Msg: "invalid token"}
@@ -109,11 +109,11 @@ func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*e
 
 	err = u.refreshTokenRepo.DeleteRefreshToken(ctx, request.RefreshToken)
 	if err != nil {
-		return nil, errs.Internal("failed to delete refresh token", err)
+		return nil, errs.Internal(fmt.Errorf("failed to delete refresh token: %w", err))
 	}
 
 	u.logger.Debug("user logout successfully",
-		"user_id", userClaims.ID,
+		"user_id", userID,
 	)
 
 	return &emptypb.Empty{}, nil
@@ -122,7 +122,7 @@ func (u *UserService) Logout(ctx context.Context, request *pb.LogoutRequest) (*e
 func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	hashedPassword, err := u.hashUserPassword(request.Password)
 	if err != nil {
-		return nil, errs.Internal("failed to hash password", err)
+		return nil, errs.Internal(fmt.Errorf("failed to hash password: %w", err))
 	}
 
 	user, err := u.userRepo.CreateUser(ctx, db.CreateUserParams{
@@ -135,7 +135,7 @@ func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest)
 			var pgErr *pgconn.PgError
 
 			if !errors.As(err, &pgErr) {
-				return nil, errs.Internal("failed to create user", err)
+				return nil, errs.Internal(fmt.Errorf("failed to create user %w", err))
 			}
 
 			u.logger.Warn("registration attempt with duplicate value",
@@ -149,7 +149,7 @@ func (u *UserService) Register(ctx context.Context, request *pb.RegisterRequest)
 			return nil, &errs.AppError{Code: codes.AlreadyExists, Msg: fmt.Sprintf("%v must be unique", field)}
 		}
 
-		return nil, errs.Internal("failed to create user", err)
+		return nil, errs.Internal(fmt.Errorf("failed to create user: %w", err))
 	}
 
 	refreshToken, accessToken, err := u.createUserTokens(ctx, user.ID)
@@ -172,15 +172,15 @@ func (u *UserService) RefreshAccessToken(ctx context.Context, request *pb.Refres
 	user, err := u.refreshTokenRepo.GetUserByRefreshToken(ctx, request.RefreshToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, errs.Internal("invalid refresh token", err)
+			return nil, errs.Internal(fmt.Errorf("invalid refresh token: %w", err))
 		}
 
-		return nil, errs.Internal("internal server error", err)
+		return nil, errs.Internal(fmt.Errorf("internal server error: %w", err))
 	}
 
 	accessToken, err := token.GenerateAccessToken([]byte(u.config.JWTSecret), user.ID.String())
 	if err != nil {
-		return nil, errs.Internal("failed to generate access token, try again", err)
+		return nil, errs.Internal(fmt.Errorf("failed to generate access token %w", err))
 	}
 
 	u.logger.Debug("user refresh access successfully",
@@ -193,7 +193,7 @@ func (u *UserService) RefreshAccessToken(ctx context.Context, request *pb.Refres
 func (u *UserService) GetUserByAccess(ctx context.Context, request *pb.GetUserByAccessRequest) (*pb.GetUserByAccessResponse, error) {
 	userData, err := token.DecodeAccessToken([]byte(u.config.JWTSecret), request.AccessToken)
 	if err != nil {
-		return nil, errs.Internal("failed to decode access token", err)
+		return nil, errs.Internal(fmt.Errorf("failed to decode access token: %w", err))
 	}
 
 	u.logger.Debug("user refresh access successfully",
@@ -201,6 +201,28 @@ func (u *UserService) GetUserByAccess(ctx context.Context, request *pb.GetUserBy
 	)
 
 	return &pb.GetUserByAccessResponse{UserId: userData.UserID}, nil
+}
+
+func (u *UserService) GetMe(ctx context.Context, request *pb.GetMeRequest) (*pb.GetMeResponse, error) {
+	userID, ok := ctx.Value(types.UserIDKey).(*pgtype.UUID)
+	if !ok {
+		return nil, errs.Internal(errors.New("failed to get user from ctx"))
+	}
+
+	user, err := u.userRepo.GetUser(ctx, *userID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, errs.Internal(fmt.Errorf("invalid refresh token: %w", err))
+		}
+
+		return nil, errs.Internal(fmt.Errorf("internal server error: %w", err))
+	}
+
+	return &pb.GetMeResponse{User: &pb.User{
+		Id:       user.ID.String(),
+		Username: user.Username,
+		Email:    user.Email,
+	}}, nil
 }
 
 func (u *UserService) hashUserPassword(password string) (string, error) {
@@ -227,7 +249,7 @@ func (u *UserService) getFieldNameFromConstraint(constraint string) string {
 func (u *UserService) createUserTokens(ctx context.Context, user_id pgtype.UUID) (string, string, error) {
 	refreshToken, err := token.GenerateRefreshToken(32)
 	if err != nil {
-		return "", "", errs.Internal("failed to generate refresh token, try again", err)
+		return "", "", errs.Internal(fmt.Errorf("failed to generate refresh token: %w", err))
 	}
 
 	_, err = u.refreshTokenRepo.CreateRefreshToken(ctx, db.CreateRefreshTokenParams{
@@ -240,15 +262,15 @@ func (u *UserService) createUserTokens(ctx context.Context, user_id pgtype.UUID)
 	})
 	if err != nil {
 		if errs.IsPostgresErrorByMap(err, errs.UniqueViolation) {
-			return "", "", errs.Internal("failed to create refresh token (unique token error), try again", err)
+			return "", "", errs.Internal(fmt.Errorf("failed to create refresh token (unique token error): %w", err))
 		}
 
-		return "", "", errs.Internal("failed to create refresh token, try again", err)
+		return "", "", errs.Internal(fmt.Errorf("failed to create refresh token: %w", err))
 	}
 
 	accessToken, err := token.GenerateAccessToken([]byte(u.config.JWTSecret), user_id.String())
 	if err != nil {
-		return "", "", errs.Internal("failed to generate access token, try again", err)
+		return "", "", errs.Internal(fmt.Errorf("failed to generate access token: %w", err))
 	}
 
 	return refreshToken, accessToken, nil

@@ -18,7 +18,7 @@ CREATE TABLE products (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_products_category_id ON products(categories);
+CREATE INDEX idx_products_category_id ON products(category_id);
 
 CREATE INDEX idx_products_catalog
 ON products (created_at DESC)

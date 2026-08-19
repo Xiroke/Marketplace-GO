@@ -1,11 +1,5 @@
 basePath: /api/v1
 definitions:
-  auth.ErrorResponse:
-    properties:
-      error:
-        example: Failed to login
-        type: string
-    type: object
   auth.LoginRequest:
     properties:
       email:
@@ -29,10 +23,192 @@ definitions:
       user_id:
         example: 123e4567-e89b-12d3-a456-426614174000
         type: string
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: secret123
+        type: string
+      username:
+        example: user
+        type: string
     required:
-    - access_token
-    - refresh_token
-    - user_id
+    - email
+    - password
+    - username
+    type: object
+  auth.RegisterResponse:
+    properties:
+      access_token:
+        example: string
+        type: string
+      refresh_token:
+        example: string
+        type: string
+      user_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  categories.Category:
+    properties:
+      created_at:
+        example: "2016-08-19T15:16:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: string
+        type: string
+      parent_id:
+        example: 1
+        type: integer
+    type: object
+  categories.CreateCategoryRequest:
+    properties:
+      name:
+        example: string
+        type: string
+      parent_id:
+        example: 1
+        type: integer
+    required:
+    - name
+    type: object
+  categories.CreateCategoryResponse:
+    properties:
+      created_at:
+        example: "2016-08-19T15:16:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: string
+        type: string
+      parent_id:
+        example: 1
+        type: integer
+    type: object
+  categories.GetCategoriesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/categories.Category'
+        type: array
+    type: object
+  products.CreateProductRequest:
+    properties:
+      attributes:
+        example: '{''color'': ''red''}'
+        type: string
+      category_id:
+        example: 1
+        type: integer
+      description:
+        example: string
+        type: string
+      name:
+        example: string
+        type: string
+      price:
+        example: "123.45"
+        type: string
+    required:
+    - attributes
+    - category_id
+    - description
+    - name
+    - price
+    type: object
+  products.CreateProductResponse:
+    properties:
+      attributes:
+        example: '{''color'': ''red''}'
+        type: string
+      category_id:
+        example: 1
+        type: integer
+      created_at:
+        example: "2016-08-19T15:16:00Z"
+        type: string
+      creator_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      description:
+        example: string
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: string
+        type: string
+      price:
+        example: "123.45"
+        type: string
+      status:
+        example: draft
+        type: string
+      updated_at:
+        example: "2016-08-19T15:16:00Z"
+        type: string
+    type: object
+  products.GetProductsByCategoryResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/products.Product'
+        type: array
+    type: object
+  products.GetProductsByCreatorResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/products.Product'
+        type: array
+    type: object
+  products.Product:
+    properties:
+      attributes:
+        example: '{''color'': ''red''}'
+        type: string
+      category_id:
+        example: 1
+        type: integer
+      created_at:
+        example: "2016-08-19T15:16:00Z"
+        type: string
+      creator_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      description:
+        example: string
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: string
+        type: string
+      price:
+        example: "123.45"
+        type: string
+      status:
+        example: draft
+        type: string
+      updated_at:
+        example: "2016-08-19T15:16:00Z"
+        type: string
+    type: object
+  responses.ErrorResponse:
+    properties:
+      error:
+        example: Failed to login
+        type: string
     type: object
 info:
   contact: {}
@@ -40,13 +216,59 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /auth/categories:
+    get:
+      consumes:
+      - application/json
+      description: get categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.GetCategoriesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: get categories
+      tags:
+      - catalog
+    post:
+      consumes:
+      - application/json
+      description: create category in marketplace
+      parameters:
+      - description: body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/categories.CreateCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/categories.CreateCategoryResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: create category
+      tags:
+      - catalog
   /auth/login:
     post:
       consumes:
       - application/json
       description: login the user
       parameters:
-      - description: Email
+      - description: body
         in: body
         name: request
         required: true
@@ -59,14 +281,154 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/auth.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/auth.ErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: Login
       tags:
       - accounts
+  /auth/me:
+    post:
+      consumes:
+      - application/json
+      description: get me
+      produces:
+      - application/json
+      responses:
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: get me
+      tags:
+      - accounts
+  /auth/products:
+    post:
+      consumes:
+      - application/json
+      description: create product in marketplace
+      parameters:
+      - description: body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/products.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/products.CreateProductResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: create product
+      tags:
+      - catalog
+  /auth/products/category/{category_id}:
+    get:
+      consumes:
+      - application/json
+      description: get products by categpry
+      parameters:
+      - description: category id
+        format: int32
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/products.GetProductsByCategoryResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: get products by categpry
+      tags:
+      - catalog
+  /auth/products/creator/{creator_id}:
+    get:
+      consumes:
+      - application/json
+      description: get products by creator
+      parameters:
+      - description: user id as uuid
+        in: path
+        name: creator_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/products.GetProductsByCreatorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: get products by creator
+      tags:
+      - catalog
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: create the user account
+      parameters:
+      - description: body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.RegisterResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: register
+      tags:
+      - accounts
 securityDefinitions:
-  BasicAuth:
-    type: basic
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

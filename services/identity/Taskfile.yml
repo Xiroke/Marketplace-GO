@@ -10,6 +10,7 @@ tasks:
   run-dev:
     cmds:
       - docker compose -f ./docker-compose.dev.yaml up -d
+      - task: goose-up
       - task: run
 
   build:
@@ -23,12 +24,16 @@ tasks:
       - goose create -dir ./sql/migrations {{.NAME}} sql
 
   goose-up:
+    desc: "goose up migrations"
+    dotenv: ['.env']
     cmds:
-      - goose up -dir ./sql/migrations
+      - goose -dir ./sql/migrations postgres "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable" up
 
   goose-down:
+    desc: "goose down migrations"
+    dotenv: ['.env']
     cmds:
-      - goose down -dir ./sql/migrations
+      - goose -dir ./sql/migrations down
 
   sqlc:
     cmds:

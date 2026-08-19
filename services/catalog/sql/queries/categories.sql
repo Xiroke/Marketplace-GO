@@ -2,3 +2,6 @@
 INSERT INTO categories (name, parent_id)
 VALUES ($1, $2)
 RETURNING *;
+
+-- name: GetCategories :many
+SELECT * FROM categories;

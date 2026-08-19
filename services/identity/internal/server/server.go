@@ -69,6 +69,10 @@ func (s *server) GetUserByAccess(ctx context.Context, request *pb.GetUserByAcces
 	return s.authService.GetUserByAccess(ctx, request)
 }
 
+func (s *server) GetMe(ctx context.Context, request *pb.GetMeRequest) (*pb.GetMeResponse, error) {
+	return s.authService.GetMe(ctx, request)
+}
+
 var methodsWithAuth = map[string]bool{
 	"/identity.v1.AuthService/Login":              false,
 	"/identity.v1.AuthService/Register":           false,
@@ -102,8 +106,10 @@ func StartServer() {
 		os.Exit(1)
 	}
 	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(interceptors.LoggingInterceptor(logger)),
-		grpc.UnaryInterceptor(interceptors.GetAuthUnaryInterceptor(methodsWithAuth, config, queries)),
+		grpc.ChainUnaryInterceptor(
+			interceptors.GetLoggingInterceptor(logger),
+			interceptors.GetAuthUnaryInterceptor(methodsWithAuth),
+		),
 	}
 
 	logger.Info("Create server")

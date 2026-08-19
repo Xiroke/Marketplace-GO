@@ -27,46 +27,25 @@ func NewServer(
 }
 
 func (s *server) CreateCategory(ctx context.Context, req *pb.CreateCategoryRequest) (*pb.CreateCategoryResponse, error) {
-	res, err := s.categoryService.CreateCategory(ctx, req)
-	if err != nil {
-		return nil, err
-	}
+	return s.categoryService.CreateCategory(ctx, req)
+}
 
-	return res, nil
+func (s *server) GetCategories(ctx context.Context, req *pb.GetCategoriesRequest) (*pb.GetCategoriesResponse, error) {
+	return s.categoryService.GetCategories(ctx, req)
 }
 
 func (s *server) CreateProduct(ctx context.Context, req *pb.CreateProductRequest) (*pb.CreateProductResponse, error) {
-	res, err := s.productService.CreateProduct(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return s.productService.CreateProduct(ctx, req)
 }
 
 func (s *server) GetProduct(ctx context.Context, req *pb.GetProductRequest) (*pb.GetProductResponse, error) {
-	res, err := s.productService.GetProduct(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return s.productService.GetProduct(ctx, req)
 }
 
 func (s *server) GetProductsByCategory(ctx context.Context, req *pb.GetProductsByCategoryRequest) (*pb.GetProductsByCategoryResponse, error) {
-	res, err := s.productService.GetProductsByCategory(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return s.productService.GetProductsByCategory(ctx, req)
 }
 
 func (s *server) GetProductsByCreator(ctx context.Context, req *pb.GetProductsByCreatorRequest) (*pb.GetProductsByCreatorResponse, error) {
-	res, err := s.productService.GetProductsByCreator(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return s.productService.GetProductsByCreator(ctx, req)
 }

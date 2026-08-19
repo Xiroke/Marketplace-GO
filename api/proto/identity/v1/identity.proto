@@ -47,6 +47,20 @@ message GetUserByAccessResponse {
   string user_id = 1;
 }
 
+message User {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+}
+
+message GetMeRequest {
+
+}
+
+message GetMeResponse {
+  User user = 1;
+}
+
 
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
@@ -54,4 +68,5 @@ service AuthService {
   rpc Logout(LogoutRequest) returns (google.protobuf.Empty);
   rpc RefreshAccessToken(RefreshAccessTokenRequest) returns (RefreshAccessTokenResponse);
   rpc GetUserByAccess(GetUserByAccessRequest) returns (GetUserByAccessResponse);
+  rpc GetMe(GetMeRequest) returns (GetMeResponse);
 }

@@ -24,6 +24,7 @@ const (
 	CatalogService_GetProductsByCreator_FullMethodName  = "/catalog.v1.CatalogService/GetProductsByCreator"
 	CatalogService_GetProductsByCategory_FullMethodName = "/catalog.v1.CatalogService/GetProductsByCategory"
 	CatalogService_CreateCategory_FullMethodName        = "/catalog.v1.CatalogService/CreateCategory"
+	CatalogService_GetCategories_FullMethodName         = "/catalog.v1.CatalogService/GetCategories"
 )
 
 // CatalogServiceClient is the client API for CatalogService service.
@@ -35,6 +36,7 @@ type CatalogServiceClient interface {
 	GetProductsByCreator(ctx context.Context, in *GetProductsByCreatorRequest, opts ...grpc.CallOption) (*GetProductsByCreatorResponse, error)
 	GetProductsByCategory(ctx context.Context, in *GetProductsByCategoryRequest, opts ...grpc.CallOption) (*GetProductsByCategoryResponse, error)
 	CreateCategory(ctx context.Context, in *CreateCategoryRequest, opts ...grpc.CallOption) (*CreateCategoryResponse, error)
+	GetCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error)
 }
 
 type catalogServiceClient struct {
@@ -95,6 +97,16 @@ func (c *catalogServiceClient) CreateCategory(ctx context.Context, in *CreateCat
 	return out, nil
 }
 
+func (c *catalogServiceClient) GetCategories(ctx context.Context, in *GetCategoriesRequest, opts ...grpc.CallOption) (*GetCategoriesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCategoriesResponse)
+	err := c.cc.Invoke(ctx, CatalogService_GetCategories_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CatalogServiceServer is the server API for CatalogService service.
 // All implementations must embed UnimplementedCatalogServiceServer
 // for forward compatibility.
@@ -104,6 +116,7 @@ type CatalogServiceServer interface {
 	GetProductsByCreator(context.Context, *GetProductsByCreatorRequest) (*GetProductsByCreatorResponse, error)
 	GetProductsByCategory(context.Context, *GetProductsByCategoryRequest) (*GetProductsByCategoryResponse, error)
 	CreateCategory(context.Context, *CreateCategoryRequest) (*CreateCategoryResponse, error)
+	GetCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error)
 	mustEmbedUnimplementedCatalogServiceServer()
 }
 
@@ -128,6 +141,9 @@ func (UnimplementedCatalogServiceServer) GetProductsByCategory(context.Context, 
 }
 func (UnimplementedCatalogServiceServer) CreateCategory(context.Context, *CreateCategoryRequest) (*CreateCategoryResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateCategory not implemented")
+}
+func (UnimplementedCatalogServiceServer) GetCategories(context.Context, *GetCategoriesRequest) (*GetCategoriesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetCategories not implemented")
 }
 func (UnimplementedCatalogServiceServer) mustEmbedUnimplementedCatalogServiceServer() {}
 func (UnimplementedCatalogServiceServer) testEmbeddedByValue()                        {}
@@ -240,6 +256,24 @@ func _CatalogService_CreateCategory_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CatalogService_GetCategories_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCategoriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CatalogServiceServer).GetCategories(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CatalogService_GetCategories_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CatalogServiceServer).GetCategories(ctx, req.(*GetCategoriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CatalogService_ServiceDesc is the grpc.ServiceDesc for CatalogService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +300,10 @@ var CatalogService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateCategory",
 			Handler:    _CatalogService_CreateCategory_Handler,
+		},
+		{
+			MethodName: "GetCategories",
+			Handler:    _CatalogService_GetCategories_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

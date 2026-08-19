@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package catalog.v1;
-option go_package = "identity/v1;catalogv1";
+option go_package = "catalog/v1;catalogv1";
 import "google/protobuf/timestamp.proto";
 
 message CreateProductRequest {
@@ -9,25 +9,19 @@ message CreateProductRequest {
   string description = 2;
   string price = 3;
   string attributes = 4; //json
-  string creator_id = 5; //uuid
-  int32 category_id = 6;
+  int32 category_id = 5;
 }
 
 message CreateProductResponse {
   Product product = 1;
 }
 
-message CreateCategoryRequest {
-  string name = 1;
-  int32 parent_id = 2;
-}
-
-message CreateCategoryResponse {
-  string name = 1;
-  int32 parent_id = 2;
-  int32 id = 3;
-  google.protobuf.Timestamp created_at = 4;
-}
+  enum ProductStatus {
+    PRODUCT_STATUS_UNSPECIFIED = 0;
+    PRODUCT_STATUS_DRAFT = 1;
+    PRODUCT_STATUS_PUBLISHED = 2;
+    PRODUCT_STATUS_ARCHIVED = 3;
+  }
 
 message Product {
   string name = 1;
@@ -37,7 +31,7 @@ message Product {
   string creator_id = 5; // uuid
   int32 category_id = 6;
   string id = 7; // uuid
-  string status = 8;
+  ProductStatus status = 8;
   google.protobuf.Timestamp updated_at = 9;
   google.protobuf.Timestamp created_at = 10;
 }
@@ -66,10 +60,37 @@ message GetProductsByCategoryResponse {
   repeated Product products = 1;
 }
 
+message Category {
+  string name = 1;
+  optional int32 parent_id = 2;
+  int32 id = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+
+message CreateCategoryRequest {
+  string name = 1;
+  optional int32 parent_id = 2;
+}
+
+message CreateCategoryResponse {
+  Category category = 1;
+}
+
+message GetCategoriesRequest {
+
+}
+
+message GetCategoriesResponse {
+  repeated Category categories = 1;
+}
+
 service CatalogService {
   rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
   rpc GetProduct(GetProductRequest) returns (GetProductResponse);
   rpc GetProductsByCreator(GetProductsByCreatorRequest) returns (GetProductsByCreatorResponse);
   rpc GetProductsByCategory(GetProductsByCategoryRequest) returns (GetProductsByCategoryResponse);
+
   rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
+  rpc GetCategories(GetCategoriesRequest) returns (GetCategoriesResponse);
 }

@@ -2,6 +2,7 @@ package server
 
 import (
 	"api-gateway/internal/config"
+	catalogv1 "api-gateway/internal/grpc/catalog/v1"
 	identityv1 "api-gateway/internal/grpc/identity/v1"
 	"context"
 	"fmt"
@@ -35,10 +36,18 @@ func RunServer() {
 
 	identityClient := identityv1.NewAuthServiceClient(connAuthClient)
 
+	connCatalogClient, err := grpc.NewClient(config.AddressCatalogService, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(fmt.Sprintf("failed to run grcp client %v", err))
+	}
+	defer connCatalogClient.Close()
+
+	catalogClient := catalogv1.NewCatalogServiceClient(connCatalogClient)
+
 	logger.Info("Create api-gateway server")
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
-	RegisterRoutes(ctx, r, config, identityClient)
+	RegisterRoutes(ctx, r, config, logger, identityClient, catalogClient)
 
 	logger.Info("Run api-gateway server")
 	Address := fmt.Sprintf(":%s", config.Port)

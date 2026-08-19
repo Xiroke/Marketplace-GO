@@ -8,7 +8,10 @@ import "api-gateway/internal/server"
 
 // @BasePath  /api/v1
 
-// @securityDefinitions.basic  BasicAuth
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 func main() {
 	server.RunServer()
 }

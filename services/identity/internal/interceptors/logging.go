@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-func LoggingInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
+func GetLoggingInterceptor(logger *slog.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 		resp, err = handler(ctx, req)
 		if err != nil {

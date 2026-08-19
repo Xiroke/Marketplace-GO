@@ -475,6 +475,146 @@ func (x *GetUserByAccessResponse) GetUserId() string {
 	return ""
 }
 
+type User struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *User) Reset() {
+	*x = User{}
+	mi := &file_identity_v1_identity_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *User) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*User) ProtoMessage() {}
+
+func (x *User) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use User.ProtoReflect.Descriptor instead.
+func (*User) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *User) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *User) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *User) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type GetMeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMeRequest) Reset() {
+	*x = GetMeRequest{}
+	mi := &file_identity_v1_identity_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMeRequest) ProtoMessage() {}
+
+func (x *GetMeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMeRequest.ProtoReflect.Descriptor instead.
+func (*GetMeRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{10}
+}
+
+type GetMeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMeResponse) Reset() {
+	*x = GetMeResponse{}
+	mi := &file_identity_v1_identity_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMeResponse) ProtoMessage() {}
+
+func (x *GetMeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_identity_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMeResponse.ProtoReflect.Descriptor instead.
+func (*GetMeResponse) Descriptor() ([]byte, []int) {
+	return file_identity_v1_identity_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetMeResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 var File_identity_v1_identity_proto protoreflect.FileDescriptor
 
 const file_identity_v1_identity_proto_rawDesc = "" +
@@ -504,13 +644,21 @@ const file_identity_v1_identity_proto_rawDesc = "" +
 	"\x16GetUserByAccessRequest\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"2\n" +
 	"\x17GetUserByAccessResponse\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId2\x99\x03\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"H\n" +
+	"\x04User\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\"\x0e\n" +
+	"\fGetMeRequest\"6\n" +
+	"\rGetMeResponse\x12%\n" +
+	"\x04user\x18\x01 \x01(\v2\x11.identity.v1.UserR\x04user2\xd9\x03\n" +
 	"\vAuthService\x12>\n" +
 	"\x05Login\x12\x19.identity.v1.LoginRequest\x1a\x1a.identity.v1.LoginResponse\x12G\n" +
 	"\bRegister\x12\x1c.identity.v1.RegisterRequest\x1a\x1d.identity.v1.RegisterResponse\x12<\n" +
 	"\x06Logout\x12\x1a.identity.v1.LogoutRequest\x1a\x16.google.protobuf.Empty\x12e\n" +
 	"\x12RefreshAccessToken\x12&.identity.v1.RefreshAccessTokenRequest\x1a'.identity.v1.RefreshAccessTokenResponse\x12\\\n" +
-	"\x0fGetUserByAccess\x12#.identity.v1.GetUserByAccessRequest\x1a$.identity.v1.GetUserByAccessResponseB\x18Z\x16identity/v1;identityv1b\x06proto3"
+	"\x0fGetUserByAccess\x12#.identity.v1.GetUserByAccessRequest\x1a$.identity.v1.GetUserByAccessResponse\x12>\n" +
+	"\x05GetMe\x12\x19.identity.v1.GetMeRequest\x1a\x1a.identity.v1.GetMeResponseB\x18Z\x16identity/v1;identityv1b\x06proto3"
 
 var (
 	file_identity_v1_identity_proto_rawDescOnce sync.Once
@@ -524,7 +672,7 @@ func file_identity_v1_identity_proto_rawDescGZIP() []byte {
 	return file_identity_v1_identity_proto_rawDescData
 }
 
-var file_identity_v1_identity_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_identity_v1_identity_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_identity_v1_identity_proto_goTypes = []any{
 	(*LoginRequest)(nil),               // 0: identity.v1.LoginRequest
 	(*LoginResponse)(nil),              // 1: identity.v1.LoginResponse
@@ -535,24 +683,30 @@ var file_identity_v1_identity_proto_goTypes = []any{
 	(*RefreshAccessTokenResponse)(nil), // 6: identity.v1.RefreshAccessTokenResponse
 	(*GetUserByAccessRequest)(nil),     // 7: identity.v1.GetUserByAccessRequest
 	(*GetUserByAccessResponse)(nil),    // 8: identity.v1.GetUserByAccessResponse
-	(*emptypb.Empty)(nil),              // 9: google.protobuf.Empty
+	(*User)(nil),                       // 9: identity.v1.User
+	(*GetMeRequest)(nil),               // 10: identity.v1.GetMeRequest
+	(*GetMeResponse)(nil),              // 11: identity.v1.GetMeResponse
+	(*emptypb.Empty)(nil),              // 12: google.protobuf.Empty
 }
 var file_identity_v1_identity_proto_depIdxs = []int32{
-	0, // 0: identity.v1.AuthService.Login:input_type -> identity.v1.LoginRequest
-	2, // 1: identity.v1.AuthService.Register:input_type -> identity.v1.RegisterRequest
-	4, // 2: identity.v1.AuthService.Logout:input_type -> identity.v1.LogoutRequest
-	5, // 3: identity.v1.AuthService.RefreshAccessToken:input_type -> identity.v1.RefreshAccessTokenRequest
-	7, // 4: identity.v1.AuthService.GetUserByAccess:input_type -> identity.v1.GetUserByAccessRequest
-	1, // 5: identity.v1.AuthService.Login:output_type -> identity.v1.LoginResponse
-	3, // 6: identity.v1.AuthService.Register:output_type -> identity.v1.RegisterResponse
-	9, // 7: identity.v1.AuthService.Logout:output_type -> google.protobuf.Empty
-	6, // 8: identity.v1.AuthService.RefreshAccessToken:output_type -> identity.v1.RefreshAccessTokenResponse
-	8, // 9: identity.v1.AuthService.GetUserByAccess:output_type -> identity.v1.GetUserByAccessResponse
-	5, // [5:10] is the sub-list for method output_type
-	0, // [0:5] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	9,  // 0: identity.v1.GetMeResponse.user:type_name -> identity.v1.User
+	0,  // 1: identity.v1.AuthService.Login:input_type -> identity.v1.LoginRequest
+	2,  // 2: identity.v1.AuthService.Register:input_type -> identity.v1.RegisterRequest
+	4,  // 3: identity.v1.AuthService.Logout:input_type -> identity.v1.LogoutRequest
+	5,  // 4: identity.v1.AuthService.RefreshAccessToken:input_type -> identity.v1.RefreshAccessTokenRequest
+	7,  // 5: identity.v1.AuthService.GetUserByAccess:input_type -> identity.v1.GetUserByAccessRequest
+	10, // 6: identity.v1.AuthService.GetMe:input_type -> identity.v1.GetMeRequest
+	1,  // 7: identity.v1.AuthService.Login:output_type -> identity.v1.LoginResponse
+	3,  // 8: identity.v1.AuthService.Register:output_type -> identity.v1.RegisterResponse
+	12, // 9: identity.v1.AuthService.Logout:output_type -> google.protobuf.Empty
+	6,  // 10: identity.v1.AuthService.RefreshAccessToken:output_type -> identity.v1.RefreshAccessTokenResponse
+	8,  // 11: identity.v1.AuthService.GetUserByAccess:output_type -> identity.v1.GetUserByAccessResponse
+	11, // 12: identity.v1.AuthService.GetMe:output_type -> identity.v1.GetMeResponse
+	7,  // [7:13] is the sub-list for method output_type
+	1,  // [1:7] is the sub-list for method input_type
+	1,  // [1:1] is the sub-list for extension type_name
+	1,  // [1:1] is the sub-list for extension extendee
+	0,  // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_identity_v1_identity_proto_init() }
@@ -566,7 +720,7 @@ func file_identity_v1_identity_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_identity_v1_identity_proto_rawDesc), len(file_identity_v1_identity_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

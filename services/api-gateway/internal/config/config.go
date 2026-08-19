@@ -30,6 +30,8 @@ type Config struct {
 	Port                   string `env:"PORT,required" envDefault:"8080"`
 	AddressIdentityService string `env:"ADDRESS_IDENTITY_SERVICE,required"`
 	AddressCatalogService  string `env:"ADDRESS_CATALOG_SERVICE,required"`
+
+	JWTSecret string `env:"JWT_SECRET,required"`
 }
 
 func NewConfig() (*Config, error) {

@@ -10,9 +10,9 @@ import (
 	"identity/internal/config"
 	"identity/internal/db"
 	pb "identity/internal/grpc/identity/v1"
-	"identity/internal/interceptors"
 	"identity/internal/services/mocks"
 	"identity/internal/token"
+	"identity/internal/types"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/mock"
@@ -182,7 +182,7 @@ func TestUserService_Logout_Success(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, interceptors.UserKey, token.UserClaims{UserID: expectedUser.ID.String()})
+	ctx = context.WithValue(ctx, types.UserIDKey, expectedUser.ID)
 	res, err := service.Logout(ctx, req)
 
 	require.NoError(t, err)
